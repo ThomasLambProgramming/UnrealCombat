@@ -10,6 +10,20 @@ public class UnrealCPPTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.Add("UnrealCPP");
+		ExtraModuleNames.Add("UnrealCPP");        
 	}
 }
+
+
+
+
+public class Math
+{
+	//Math = Math.			
+}
+
+
+
+
+
+
