@@ -13,17 +13,3 @@ public class UnrealCPPTarget : TargetRules
 		ExtraModuleNames.Add("UnrealCPP");        
 	}
 }
-
-
-
-
-public class Math
-{
-	//Math = Math.			
-}
-
-
-
-
-
-
