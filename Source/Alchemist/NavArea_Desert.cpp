@@ -7,7 +7,7 @@ UNavArea_Desert::UNavArea_Desert()
 {
 	DefaultCost = 1.5f;
 	FixedAreaEnteringCost = 3.0f;
+
 	
 	DrawColor = FColor::Blue;
-	
 }
