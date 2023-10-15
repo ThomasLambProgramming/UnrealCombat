@@ -92,6 +92,7 @@ void AAlchemistCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 
 void AAlchemistCharacter::Move(const FInputActionValue& Value)
 {
+	SCOPE_CYCLE_COUNTER(STAT_MoveCost);
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 

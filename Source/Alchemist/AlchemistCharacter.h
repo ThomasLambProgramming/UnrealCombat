@@ -7,6 +7,8 @@
 #include "InputActionValue.h"
 #include "AlchemistCharacter.generated.h"
 
+DECLARE_STATS_GROUP(TEXT("CustomMagicStuff"), STATGROUP_CustomMagicStuff, STATCAT_Advanced);
+DECLARE_CYCLE_STAT(TEXT("Display name"), STAT_MoveCost, STATGROUP_CustomMagicStuff);
 
 UCLASS(config=Game)
 class AAlchemistCharacter : public ACharacter
