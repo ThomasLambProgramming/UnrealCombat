@@ -50,6 +50,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	virtual void Tick(float DeltaSeconds) override;
 			
 
 protected:

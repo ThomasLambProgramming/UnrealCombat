@@ -127,6 +127,12 @@ void AAlchemistCharacter::Look(const FInputActionValue& Value)
 	}
 }
 
+void AAlchemistCharacter::Tick(float DeltaSeconds)
+{
+	//Super::Tick(DeltaSeconds);
+	//GEngine->AddOnScreenDebugMessage(-1,15.0f, FColor::Blue, TEXT("Testing"));
+}
+
 
 
 
