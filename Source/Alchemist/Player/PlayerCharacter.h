@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -25,24 +27,62 @@ public:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-	
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+
+#pragma region Input
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* JumpAction;
-
-	/** Move Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* MoveAction;
-
-	/** Look Input Action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* LookAction;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar3;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar4;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar5;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar6;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar7;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar8;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar9;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* HotBar10;
+#pragma endregion
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	UStaticMesh* SwordMesh;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	UStaticMesh* ShieldMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Components")
+	USkeletalMeshComponent* PlayerSkeletalMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	USkeletalMesh* PlayerCharacterMesh;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	UStaticMesh* LongbowMesh;
+
+	//What sockets are the sword and shield meshes going to be equipped onto.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	FString SwordSocketName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	FString ShieldSocketName;
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -57,6 +97,17 @@ protected:
 	
 	void StopJumping(const FInputActionValue& Value);
 
+	void HotBarInput(int KeyValue);
+	void Hotbar1Input(const FInputActionValue& Value);
+	void Hotbar2Input(const FInputActionValue& Value);
+	void Hotbar3Input(const FInputActionValue& Value);
+	void Hotbar4Input(const FInputActionValue& Value);
+	void Hotbar5Input(const FInputActionValue& Value);
+	void Hotbar6Input(const FInputActionValue& Value);
+	void Hotbar7Input(const FInputActionValue& Value);
+	void Hotbar8Input(const FInputActionValue& Value);
+	void Hotbar9Input(const FInputActionValue& Value);
+	void Hotbar10Input(const FInputActionValue& Value);
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

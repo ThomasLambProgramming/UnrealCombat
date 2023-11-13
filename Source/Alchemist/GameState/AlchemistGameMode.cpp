@@ -7,5 +7,4 @@
 AAlchemistGameMode::AAlchemistGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	DefaultPawnClass = APlayerCharacter::StaticClass();
 }
