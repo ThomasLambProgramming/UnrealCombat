@@ -3,13 +3,14 @@
 using UnrealBuildTool;
 using System.Collections.Generic;
 
+
 public class AlchemistTarget : TargetRules
 {
 	public AlchemistTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
+		//DefaultBuildSettings = BuildSettingsVersion.V2;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_2;
 		ExtraModuleNames.Add("Alchemist");
 	}
 }
