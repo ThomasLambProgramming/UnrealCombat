@@ -118,6 +118,7 @@ void APlayerCharacter::StopJumping(const FInputActionValue& Value)
 
 void APlayerCharacter::HotBarInput(int KeyValue)
 {
+	WeaponState = KeyValue;
 	GEngine->AddOnScreenDebugMessage(50, 15.0f, FColor::Yellow, FString::FromInt(KeyValue) + FString(" Keyboard Value"));	
 }
 
@@ -164,4 +165,4 @@ void APlayerCharacter::Hotbar6Input(const FInputActionValue& Value) {HotBarInput
 void APlayerCharacter::Hotbar7Input(const FInputActionValue& Value) {HotBarInput(7);}
 void APlayerCharacter::Hotbar8Input(const FInputActionValue& Value) {HotBarInput(8);}
 void APlayerCharacter::Hotbar9Input(const FInputActionValue& Value) {HotBarInput(9);}
-void APlayerCharacter::Hotbar10Input(const FInputActionValue& Value) {HotBarInput(10);}
+void APlayerCharacter::Hotbar10Input(const FInputActionValue& Value) {HotBarInput(0);}
