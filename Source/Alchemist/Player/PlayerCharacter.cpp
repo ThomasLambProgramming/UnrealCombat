@@ -56,13 +56,38 @@ void APlayerCharacter::BeginPlay()
 // Called every frame
 void APlayerCharacter::Tick(float DeltaTime)
 {
-	//Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 
 	GEngine->AddOnScreenDebugMessage(50, 15.0f, FColor::Yellow, MovementInput.ToString() + FString(" Keyboard Value"));	
 	if (MovementInput != FVector2D::Zero())
 	{
-		PrimaryCharacterCollider->AddForce(GetActorForwardVector() * MovementInput.Y * MovementSpeed + GetActorRightVector() * MovementInput.X * MovementSpeed);
+		PrimaryCharacterCollider->AddForce(
+			GetActorForwardVector() * MovementInput.Y * MovementSpeed +
+			GetActorRightVector() * MovementInput.X * MovementSpeed);
+		
+		if (PrimaryCharacterCollider->GetComponentVelocity().Length() > MaxMovementSpeed)
+		{
+			PrimaryCharacterCollider->SetPhysicsLinearVelocity(
+				PrimaryCharacterCollider->GetComponentVelocity().GetSafeNormal() * MaxMovementSpeed);
+		}
 	}
+	else if (PrimaryCharacterCollider->GetComponentVelocity().SquaredLength() > 0.01f)
+	{
+		//Multiply the current velocity by 0.7 or etc to rapidly slowdown the users velocity.
+		//Dont affect the z as then it would affect the users falling velocity and etc.
+		FVector currentVelocity = PrimaryCharacterCollider->GetComponentVelocity();
+		float ZAmount = currentVelocity.Z;
+		currentVelocity.Z = 0;
+		currentVelocity *= NoInputDampingAmount;
+
+		if (currentVelocity.SquaredLength() < 0.01f)
+			currentVelocity = FVector::Zero();
+		
+		currentVelocity.Z = ZAmount;
+		PrimaryCharacterCollider->SetPhysicsLinearVelocity(currentVelocity);
+	}
+
+	
 }
 
 
@@ -70,7 +95,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 void APlayerCharacter::LookInput(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D LookAxisVector = Value.Get<FVector2D>();
+	//FVector2D LookAxisVector = Value.Get<FVector2D>();
 	
 }
 

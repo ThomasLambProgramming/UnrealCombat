@@ -47,7 +47,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Character Stats")
 	float MovementSpeed = 200;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Character Stats")
+	float MaxMovementSpeed = 600;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Player Movement Settings")
+	float NoInputDampingAmount = 0.7f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	int WeaponState = 0;
+	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
