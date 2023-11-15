@@ -1,13 +1,9 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
-
-#include <string>
-
+﻿#pragma once
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "CoreMinimal.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/Pawn.h"
 #include "PlayerCharacter.generated.h"
 
@@ -20,7 +16,7 @@ public:
 	// Sets default values for this pawn's properties
 	APlayerCharacter();
 
-/** Camera boom positioning the camera behind the character */
+	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
@@ -28,7 +24,74 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	UStaticMesh* SwordMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	UCapsuleComponent* PrimaryCharacterCollider;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	UStaticMesh* ShieldMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Components")
+	USkeletalMeshComponent* PlayerSkeletalMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	UStaticMesh* LongbowMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	USceneComponent* RootComponentRef;
+	
+	//What sockets are the sword and shield meshes going to be equipped onto.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	FString SwordSocketName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
+	FString ShieldSocketName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Character Stats")
+	float MovementSpeed = 200;
+
+
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+
+	/** Returns CameraBoom subobject **/
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	/** Returns FollowCamera subobject **/
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	
+protected:
+	FVector2D MovementInput;
+	bool HoldingJumpInput = false;
+
+	
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	
 #pragma region Input
+protected:
+	/** Called for movement input */
+	void MoveInput(const FInputActionValue& Value);
+
+	/** Called for looking input */
+	void LookInput(const FInputActionValue& Value);
+
+	void JumpInput(const FInputActionValue& Value);
+	
+	void StopJumping(const FInputActionValue& Value);
+
+	void HotBarInput(int KeyValue);
+	void Hotbar1Input(const FInputActionValue& Value);
+	void Hotbar2Input(const FInputActionValue& Value);
+	void Hotbar3Input(const FInputActionValue& Value);
+	void Hotbar4Input(const FInputActionValue& Value);
+	void Hotbar5Input(const FInputActionValue& Value);
+	void Hotbar6Input(const FInputActionValue& Value);
+	void Hotbar7Input(const FInputActionValue& Value);
+	void Hotbar8Input(const FInputActionValue& Value);
+	void Hotbar9Input(const FInputActionValue& Value);
+	void Hotbar10Input(const FInputActionValue& Value);
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputMappingContext* DefaultMappingContext;
 
@@ -60,63 +123,4 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* HotBar10;
 #pragma endregion
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
-	UStaticMesh* SwordMesh;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
-	UStaticMesh* ShieldMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Components")
-	USkeletalMeshComponent* PlayerSkeletalMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
-	USkeletalMesh* PlayerCharacterMesh;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
-	UStaticMesh* LongbowMesh;
-
-	//What sockets are the sword and shield meshes going to be equipped onto.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
-	FString SwordSocketName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="References")
-	FString ShieldSocketName;
-	
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-	/** Called for movement input */
-	void MoveInput(const FInputActionValue& Value);
-
-	/** Called for looking input */
-	void LookInput(const FInputActionValue& Value);
-
-	void JumpInput(const FInputActionValue& Value);
-	
-	void StopJumping(const FInputActionValue& Value);
-
-	void HotBarInput(int KeyValue);
-	void Hotbar1Input(const FInputActionValue& Value);
-	void Hotbar2Input(const FInputActionValue& Value);
-	void Hotbar3Input(const FInputActionValue& Value);
-	void Hotbar4Input(const FInputActionValue& Value);
-	void Hotbar5Input(const FInputActionValue& Value);
-	void Hotbar6Input(const FInputActionValue& Value);
-	void Hotbar7Input(const FInputActionValue& Value);
-	void Hotbar8Input(const FInputActionValue& Value);
-	void Hotbar9Input(const FInputActionValue& Value);
-	void Hotbar10Input(const FInputActionValue& Value);
-public:
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
-
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 };
