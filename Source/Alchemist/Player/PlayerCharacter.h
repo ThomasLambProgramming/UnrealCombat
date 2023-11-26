@@ -62,6 +62,11 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
+	//I spent a long time screaming at this function and it not working with delegates till i saw one video explaining you need
+	//it to be a ufunction....... lesson learned.
+	UFUNCTION()
+	void OnHitBoxDetect(AActor* ActorHit, UPrimitiveComponent* OtherComp , const FHitResult& hit);
+	
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/

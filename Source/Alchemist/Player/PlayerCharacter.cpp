@@ -3,6 +3,8 @@
 #include "GameFramework/Controller.h"
 #include "EnhancedInputComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "UniversalRpgElements/Public/AttackHitbox.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -10,11 +12,12 @@ APlayerCharacter::APlayerCharacter()
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	USceneComponent* RootComponentRef = CreateDefaultSubobject<USceneComponent>("RootComponent");
-	SetRootComponent(RootComponentRef);
+	//USceneComponent* RootComponentReference = CreateDefaultSubobject<USceneComponent>("RootComponent");
+	//SetRootComponent(RootComponentReference);
 
 	PrimaryCharacterCollider = CreateDefaultSubobject<UCapsuleComponent>("CharacterCollider");
 	PrimaryCharacterCollider->SetupAttachment(GetRootComponent());
+	SetRootComponent(PrimaryCharacterCollider);
 	
 	PlayerSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>("CharacterMesh");
 	PlayerSkeletalMesh->SetupAttachment(PrimaryCharacterCollider);
@@ -38,6 +41,8 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false; 
 	FollowCamera->FieldOfView = 90.0f;
+	
+	
 }
 
 // Called when the game starts or when spawned
@@ -52,6 +57,22 @@ void APlayerCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	TArray<AActor*> actorsToFind;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AAttackHitbox::StaticClass(), actorsToFind);
+	for (int i = 0; i < actorsToFind.Num(); i++)
+	{
+		AAttackHitbox* hitbox = Cast<AAttackHitbox>(actorsToFind[i]);
+		if (hitbox)
+		{
+			hitbox->OnHitDelegate.AddUniqueDynamic(this, &APlayerCharacter::OnHitBoxDetect);
+		}
+	}
+}
+
+void APlayerCharacter::OnHitBoxDetect(AActor* ActorHit, UPrimitiveComponent* OtherComp , const FHitResult& hit)
+{
+	GEngine->AddOnScreenDebugMessage(20, 2, FColor::Emerald, ActorHit->GetName());
 }
 
 // Called every frame
