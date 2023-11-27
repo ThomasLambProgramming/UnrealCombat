@@ -41,8 +41,6 @@ APlayerCharacter::APlayerCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false; 
 	FollowCamera->FieldOfView = 90.0f;
-	
-	
 }
 
 // Called when the game starts or when spawned
@@ -72,7 +70,7 @@ void APlayerCharacter::BeginPlay()
 
 void APlayerCharacter::OnHitBoxDetect(AActor* ActorHit, UPrimitiveComponent* OtherComp , const FHitResult& hit)
 {
-	GEngine->AddOnScreenDebugMessage(20, 2, FColor::Emerald, ActorHit->GetName());
+	GEngine->AddOnScreenDebugMessage(20, 2, FColor::Emerald, ActorHit->GetName() + FString("Test"));
 }
 
 // Called every frame
