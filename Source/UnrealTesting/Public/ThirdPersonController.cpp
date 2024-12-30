@@ -1,5 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 #include "ThirdPersonController.h"
+
+#include <string>
+
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -9,6 +12,8 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "StandardAi.h"
+#include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -54,6 +59,50 @@ AThirdPersonController::AThirdPersonController()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void AThirdPersonController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	TArray<AActor*> foundActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStandardAi::StaticClass(), foundActors);
+
+	if (foundActors.Num() <= 0)
+		return;
+
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Blue, std::to_string(foundActors.Num()).c_str());
+	}
+	cameraForwardDirection = FollowCamera->GetComponentToWorld().GetRotation().GetForwardVector();
+	cameraForwardDirection.Z = 0;
+	cameraForwardDirection.Normalize();
+	cameraRightDirection = FollowCamera->GetComponentToWorld().GetRotation().GetRightVector();
+	cameraRightDirection.Z = 0;
+	cameraRightDirection.Normalize();
+
+	
+	FVector inputDirectionInWorld = (cameraForwardDirection * CurrentInputDirection.Y + cameraRightDirection * CurrentInputDirection.X);
+	inputDirectionInWorld.Normalize();
+	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + inputDirectionInWorld * 200, FColor::Red);
+
+	int closestEnemy = 0;
+	//Dot product will always give [-1, 1].
+	float previousDot = -2;
+	for (int i = 0; i < foundActors.Num(); ++i)
+	{
+		float dotProduct = inputDirectionInWorld.Dot(foundActors[i]->GetActorLocation() - GetActorLocation().Normalize());
+		if (dotProduct > previousDot)
+		{
+			previousDot = dotProduct;
+			closestEnemy = i;
+		}
+	}
+
+	DrawDebugSphere(GetWorld(), foundActors[closestEnemy]->GetActorLocation(), 20, 10, FColor::Cyan);
+	
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -96,7 +145,8 @@ void AThirdPersonController::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
-
+	CurrentInputDirection = MovementVector;
+	
 	if (Controller != nullptr)
 	{
 		// find out which way is forward

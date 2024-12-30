@@ -5,7 +5,6 @@
 #include "Logging/LogMacros.h"
 #include "ThirdPersonController.generated.h"
 
-
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -44,23 +43,22 @@ class AThirdPersonController : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
+	FVector2D CurrentInputDirection = FVector2D(0,0);
+	FVector cameraForwardDirection = FVector(1,0,0);
+	FVector cameraRightDirection = FVector(0,1,0);
 public:
 	AThirdPersonController();
-	
+	void Tick(float DeltaSeconds) override;
 
 protected:
-
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
-
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
-			
 
 protected:
 
 	virtual void NotifyControllerChanged() override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
