@@ -15,11 +15,12 @@ class AAIManager : public AActor
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= AI, meta = (AllowPrivateAccess = true))
 	TSubclassOf<ACharacter> DefaultAI;
-	
+
 public:	
 	// Sets default values for this actor's properties
 	AAIManager();
 
+	TArray<AActor*> AiActorsInMap;
 	
 
 protected:

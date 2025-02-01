@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "AIManager.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -12,7 +13,6 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
-#include "StandardAi.h"
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -38,7 +38,7 @@ AThirdPersonController::AThirdPersonController()
 	// instead of recompiling to adjust them
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
-	GetCharacterMovement()->MaxWalkSpeed = 500.f;
+	GetCharacterMovement()->MaxWalkSpeed = 300.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
@@ -59,20 +59,51 @@ AThirdPersonController::AThirdPersonController()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+void AThirdPersonController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	AActor* aiManager = UGameplayStatics::GetActorOfClass(GetWorld(), AAIManager::StaticClass());
+	if (aiManager == NULL)
+	{
+		GEngine->AddOnScreenDebugMessage(4, 10, FColor::Red, TEXT("DID NOT FIND AI MANAGER"));
+		return;
+	}
+	
+	AiManager = Cast<AAIManager>(aiManager);
+	if (AiManager != NULL && AiManager->AiActorsInMap.Num() > 0)
+		GEngine->AddOnScreenDebugMessage(4, 10, FColor::Red, TEXT("Found and casted ai manager"));
+}
+
 void AThirdPersonController::Tick(float DeltaSeconds)
 {
+	GEngine->AddOnScreenDebugMessage(5, 5, FColor::Blue, GetActorLocation().ToString());
 	Super::Tick(DeltaSeconds);
-
-	TArray<AActor*> foundActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStandardAi::StaticClass(), foundActors);
-
-	if (foundActors.Num() <= 0)
-		return;
-
-	if (GEngine)
+	if (IsAttacking && selectedAiIndex != -1)
 	{
-		GEngine->AddOnScreenDebugMessage(10, 15.0f, FColor::Blue, std::to_string(foundActors.Num()).c_str());
+		attackTimer += GetWorld()->DeltaTimeSeconds;
+		FVector currentActorLocation = GetActorLocation();
+		if (FVector::Distance(currentActorLocation, AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation()) < attackLerpingMinDistance)
+		{
+			IsAttacking = false;
+		}
+		else
+		{
+			//lerp between where we started the attack and where the ai enemy currently is based on the powercurve so extra "style" can be added and modified without changing code.
+			float getLerpAmount = powerCurveOnHit->GetFloatValue(attackTimer / attackDuration);
+			FVector lerpGoalLocation = AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation();
+			//for now since it is a flat surface the z location has to be the same since the mesh offsets are ever so slightly off causing the player to be a few units into the ground.
+			lerpGoalLocation.Z = startingLocation.Z;
+			SetActorLocation(FMath::Lerp(startingLocation, lerpGoalLocation, getLerpAmount));
+			//We dont need to do ai detection if we are already going to attack an enemy.
+			if (attackTimer >= attackDuration)
+			{
+				IsAttacking = false;
+			}
+		}
+		return;
 	}
+
 	cameraForwardDirection = FollowCamera->GetComponentToWorld().GetRotation().GetForwardVector();
 	cameraForwardDirection.Z = 0;
 	cameraForwardDirection.Normalize();
@@ -80,6 +111,12 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 	cameraRightDirection.Z = 0;
 	cameraRightDirection.Normalize();
 
+	//Have selected ai. selected ai is removed
+	if (CurrentInputDirection.Length() < 0.1f)
+	{
+		selectedAiIndex = 0;	
+		return;
+	}
 	
 	FVector inputDirectionInWorld = (cameraForwardDirection * CurrentInputDirection.Y + cameraRightDirection * CurrentInputDirection.X);
 	inputDirectionInWorld.Normalize();
@@ -88,18 +125,17 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 	int closestEnemy = 0;
 	//Dot product will always give [-1, 1].
 	float previousDot = -2;
-	for (int i = 0; i < foundActors.Num(); ++i)
+    for (int i = 0; i < AiManager->AiActorsInMap.Num(); ++i)
 	{
-		float dotProduct = inputDirectionInWorld.Dot(foundActors[i]->GetActorLocation() - GetActorLocation().Normalize());
+		float dotProduct = inputDirectionInWorld.Dot((AiManager->AiActorsInMap[i]->GetActorLocation() - GetActorLocation()).GetSafeNormal());
 		if (dotProduct > previousDot)
 		{
 			previousDot = dotProduct;
 			closestEnemy = i;
 		}
 	}
-
-	DrawDebugSphere(GetWorld(), foundActors[closestEnemy]->GetActorLocation(), 20, 10, FColor::Cyan);
-	
+	selectedAiIndex = closestEnemy;	
+	DrawDebugSphere(GetWorld(), AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation(), 20, 10, FColor::Cyan);
 }
 
 
@@ -128,9 +164,18 @@ void AThirdPersonController::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AThirdPersonController::Attack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AThirdPersonController::StopAttack);
+		
+		EnhancedInputComponent->BindAction(CounterAction, ETriggerEvent::Started, this, &AThirdPersonController::CounterAttack);
+		
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AThirdPersonController::Interact);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPersonController::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &AThirdPersonController::MoveCancelled);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AThirdPersonController::MoveCancelled);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPersonController::Look);
@@ -143,6 +188,10 @@ void AThirdPersonController::SetupPlayerInputComponent(UInputComponent* PlayerIn
 
 void AThirdPersonController::Move(const FInputActionValue& Value)
 {
+	//Attacking should not be able to be changed once the attack has started.
+	if (IsAttacking)
+		return;
+	
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	CurrentInputDirection = MovementVector;
@@ -154,15 +203,19 @@ void AThirdPersonController::Move(const FInputActionValue& Value)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X).GetSafeNormal();
 	
 		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y).GetSafeNormal();
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
+}
+void AThirdPersonController::MoveCancelled(const FInputActionValue& Value)
+{
+	CurrentInputDirection = FVector2D(0,0);
 }
 
 void AThirdPersonController::Look(const FInputActionValue& Value)
@@ -178,4 +231,25 @@ void AThirdPersonController::Look(const FInputActionValue& Value)
 	}
 }
 
+void AThirdPersonController::Attack(const FInputActionValue& Value)
+{
+	if (selectedAiIndex != -1 && IsAttacking == false)
+	{
+		IsAttacking = true;
+		attackTimer = 0;
+		startingLocation = GetActorLocation() + attackVerticalOffset;
+	}
+}
+
+void AThirdPersonController::StopAttack(const FInputActionValue& Value)
+{
+}
+
+void AThirdPersonController::CounterAttack(const FInputActionValue& Value)
+{
+}
+
+void AThirdPersonController::Interact(const FInputActionValue& Value)
+{
+}
 
