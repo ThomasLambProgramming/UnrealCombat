@@ -12,7 +12,7 @@ AProjectileManager::AProjectileManager()
 	PrimaryActorTick.bCanEverTick = true;
 	projectileIndex = 0;
 	defaultProjectileRotation = FRotator(0,0,0);
-	defaultProjectileLocation = FVector(0,0,0);
+	defaultProjectileLocation = FVector(0,0,-1000);
 }
 
 void AProjectileManager::ResetProjectile(int a_index)
@@ -41,7 +41,9 @@ void AProjectileManager::BeginPlay()
 	//currentProjectilesInScene.Init()
 	//Pre init all projectiles so it doesnt generate anything once the game is loaded.
 	for (int i = 0; i < MaxProjectilesInScene; i++)
-		currentProjectilesInScene.Add(GetWorld()->SpawnActor<AProjectile>(defaultProjectile, defaultProjectileLocation + FVector(i * 100, 0, i * 100), defaultProjectileRotation, defaultProjectileSpawnParams));
+	{
+		currentProjectilesInScene.Add(GetWorld()->SpawnActor<AProjectile>(defaultProjectile, defaultProjectileLocation, defaultProjectileRotation, defaultProjectileSpawnParams));
+	}
 }
 // Called every frame
 void AProjectileManager::Tick(float DeltaTime)

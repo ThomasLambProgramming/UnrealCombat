@@ -22,10 +22,13 @@ AProjectile::AProjectile()
 	// Use a ProjectileMovementComponent to govern this projectile's movement
 	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileComp"));
 	ProjectileMovement->UpdatedComponent = CollisionComp;
-	ProjectileMovement->InitialSpeed = 3000.f;
-	ProjectileMovement->MaxSpeed = 3000.f;
+	ProjectileMovement->InitialSpeed = 0.f;
+	ProjectileMovement->MaxSpeed = 5000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
+	ProjectileMovement->Activate();
+
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AProjectile::ResetProjectile()
@@ -33,7 +36,7 @@ void AProjectile::ResetProjectile()
 	ProjectileMovement->Velocity.X = 0;
 	ProjectileMovement->Velocity.Y = 0;
 	ProjectileMovement->Velocity.Z = 0;
-	SetActorLocation(FVector(0,0,0));
+	SetActorLocation(FVector(0,0,-400));
 }
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -50,12 +53,12 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 // Called when the game starts or when spawned
 void AProjectile::BeginPlay()
 {
-	//Super::BeginPlay();
+	Super::BeginPlay();
 }
 
 // Called every frame
 void AProjectile::Tick(float DeltaTime)
 {
-	//Super::Tick(DeltaTime);
+	Super::Tick(DeltaTime);
 }
 

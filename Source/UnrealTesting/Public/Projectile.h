@@ -9,7 +9,7 @@
 #include "Projectile.generated.h"
 
 UCLASS()
-class UNREALTESTING_API AProjectile : public AActor
+class AProjectile : public AActor
 {
 	GENERATED_BODY()
 	

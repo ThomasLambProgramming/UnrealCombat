@@ -108,6 +108,8 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 			FVector lerpGoalLocation = AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation();
 			//for now since it is a flat surface the z location has to be the same since the mesh offsets are ever so slightly off causing the player to be a few units into the ground.
 			lerpGoalLocation.Z = startingLocation.Z;
+			FRotator goalRotation = (lerpGoalLocation - GetActorLocation()).ToOrientationRotator();
+			SetActorRotation(FMath::Lerp(GetActorRotation(), goalRotation, getLerpAmount));
 			SetActorLocation(FMath::Lerp(startingLocation, lerpGoalLocation, getLerpAmount));
 			//We dont need to do ai detection if we are already going to attack an enemy.
 			if (attackTimer >= attackDuration)
@@ -134,7 +136,7 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 	
 	FVector inputDirectionInWorld = (cameraForwardDirection * CurrentInputDirection.Y + cameraRightDirection * CurrentInputDirection.X);
 	inputDirectionInWorld.Normalize();
-	DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + inputDirectionInWorld * 200, FColor::Red);
+	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + inputDirectionInWorld * 200, FColor::Red);
 
 	int closestEnemy = 0;
 	//Dot product will always give [-1, 1].
@@ -149,7 +151,7 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 		}
 	}
 	selectedAiIndex = closestEnemy;	
-	DrawDebugSphere(GetWorld(), AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation(), 20, 10, FColor::Cyan);
+	//DrawDebugSphere(GetWorld(), AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation(), 20, 10, FColor::Cyan);
 }
 
 
@@ -247,14 +249,38 @@ void AThirdPersonController::Look(const FInputActionValue& Value)
 
 void AThirdPersonController::Attack(const FInputActionValue& Value)
 {
-	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
+	if (IsAttacking)
+		return;
 	
-	if (selectedAiIndex != -1 && IsAttacking == false)
-	{
-		IsAttacking = true;
-		attackTimer = 0;
-		startingLocation = GetActorLocation() + attackVerticalOffset;
-	}
+	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
+	projectileToFire->SetActorLocation(GetActorLocation() + FVector(0,0,50) + GetFollowCamera()->GetForwardVector() * 80);
+	projectileToFire->SetActorRotation(GetFollowCamera()->GetForwardVector().ToOrientationRotator());
+	projectileToFire->ProjectileMovement->bInterpMovement = false;
+	projectileToFire->ProjectileMovement->ResetInterpolation();
+	projectileToFire->ProjectileMovement->SetUpdatedComponent(projectileToFire->GetRootComponent());
+
+	//Get the camera forward and location, get current character location, raycast till an object is found/certain distance away (sky),
+	//Raycastlocation (camera positon + cameraforward) - current character location normalized * force.
+	FHitResult hitResult;
+	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 2000;
+	FCollisionQueryParams traceParams = FCollisionQueryParams(TEXT("CrosshairTrace"), true, this);
+	GetWorld()->LineTraceSingleByChannel(hitResult, GetFollowCamera()->GetComponentLocation(), raycastEndLocation, TraceChannelProperty, traceParams);
+
+	FVector hitLocation = FVector(0,0,0);
+	if (hitResult.bBlockingHit)
+		hitLocation = hitResult.Location;
+	else
+		hitLocation = raycastEndLocation;
+	//DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
+
+	FVector directionToFire = hitLocation - GetActorLocation();
+	directionToFire.Normalize();
+		
+	//FVector directionToFireAlignedWithCamera
+	projectileToFire->ProjectileMovement->Velocity = directionToFire * 5000;
+
+	//GEngine->AddOnScreenDebugMessage(10123543, 5, FColor::Blue, FString::FromInt(projectileToFire->ProjectileMovement->HasStoppedSimulation()));
+	
 }
 
 void AThirdPersonController::StopAttack(const FInputActionValue& Value)
@@ -263,6 +289,12 @@ void AThirdPersonController::StopAttack(const FInputActionValue& Value)
 
 void AThirdPersonController::CounterAttack(const FInputActionValue& Value)
 {
+	if (selectedAiIndex != -1 && IsAttacking == false)
+	{
+		IsAttacking = true;
+		attackTimer = 0;
+		startingLocation = GetActorLocation() + attackVerticalOffset;
+	}
 }
 
 void AThirdPersonController::Interact(const FInputActionValue& Value)

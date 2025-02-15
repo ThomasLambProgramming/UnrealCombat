@@ -53,7 +53,10 @@ class AThirdPersonController : public ACharacter
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
-
+	
+	UPROPERTY(EditAnywhere, Category="Collision")
+	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
+	
 	FVector2D CurrentInputDirection = FVector2D(0,0);
 	FVector cameraForwardDirection = FVector(1,0,0);
 	FVector cameraRightDirection = FVector(0,1,0);
