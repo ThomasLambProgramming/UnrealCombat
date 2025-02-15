@@ -64,12 +64,14 @@ void AThirdPersonController::BeginPlay()
 	Super::BeginPlay();
 	
 	AActor* aiManager = UGameplayStatics::GetActorOfClass(GetWorld(), AAIManager::StaticClass());
+	AActor* projectileManager = UGameplayStatics::GetActorOfClass(GetWorld(), AProjectileManager::StaticClass());
 	if (aiManager == NULL)
 	{
 		GEngine->AddOnScreenDebugMessage(4, 10, FColor::Red, TEXT("DID NOT FIND AI MANAGER"));
 		return;
 	}
 	
+	ProjectileManager = Cast<AProjectileManager>(projectileManager);
 	AiManager = Cast<AAIManager>(aiManager);
 	if (AiManager != NULL && AiManager->AiActorsInMap.Num() > 0)
 		GEngine->AddOnScreenDebugMessage(4, 10, FColor::Red, TEXT("Found and casted ai manager"));
@@ -77,6 +79,18 @@ void AThirdPersonController::BeginPlay()
 
 void AThirdPersonController::Tick(float DeltaSeconds)
 {
+	if (ProjectileManager != nullptr)
+	{
+		if (ProjectileManager->currentProjectilesInScene.IsEmpty())
+			GEngine->AddOnScreenDebugMessage(10321, 10, FColor::Red, TEXT("empt projectiles"));
+		else
+		{
+			FString bastardValue = FString::FromInt((uint32)ProjectileManager->currentProjectilesInScene.Num());
+			GEngine->AddOnScreenDebugMessage(10321, 10, FColor::Red, bastardValue);
+		}
+	}
+	else
+		GEngine->AddOnScreenDebugMessage(10321, 10, FColor::Red, TEXT("No projectile Manager on player"));
 	GEngine->AddOnScreenDebugMessage(5, 5, FColor::Blue, GetActorLocation().ToString());
 	Super::Tick(DeltaSeconds);
 	if (IsAttacking && selectedAiIndex != -1)
@@ -233,6 +247,8 @@ void AThirdPersonController::Look(const FInputActionValue& Value)
 
 void AThirdPersonController::Attack(const FInputActionValue& Value)
 {
+	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
+	
 	if (selectedAiIndex != -1 && IsAttacking == false)
 	{
 		IsAttacking = true;

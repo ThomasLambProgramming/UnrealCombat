@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ProjectileManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ThirdPersonController.generated.h"
@@ -98,6 +99,7 @@ protected:
 
 private:
 	AAIManager* AiManager;
+	AProjectileManager* ProjectileManager;
 	bool IsAttacking = false;
 	float attackTimer = 0;
 	FVector startingLocation;
