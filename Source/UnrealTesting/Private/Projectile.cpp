@@ -1,5 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "Projectile.h"
+
+#include "StandardAi.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 
@@ -42,7 +44,14 @@ void AProjectile::ResetProjectile()
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	//add damage. here other actor is the ai if it hits. do a cast check.
-	GEngine->AddOnScreenDebugMessage(696969, 5, FColor::Blue, OtherActor->GetActorNameOrLabel());
+	AStandardAi* enemyHit = Cast<AStandardAi>(OtherActor);
+	if (enemyHit == nullptr)
+		return;
+
+	//for now hide the projectile once it hits the enemy.
+	ResetProjectile();
+
+	
 }
 
 // Called when the game starts or when spawned

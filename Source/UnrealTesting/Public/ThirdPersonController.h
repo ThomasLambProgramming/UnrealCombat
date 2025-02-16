@@ -65,6 +65,9 @@ class AThirdPersonController : public ACharacter
 	float maximumDistanceForEnemyHit = 300;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
+	float attackSpeed = 4;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* powerCurveOnHit;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
@@ -106,6 +109,7 @@ private:
 	bool IsAttacking = false;
 	float attackTimer = 0;
 	FVector startingLocation;
+	float shootingTimer = 0;
 	
 public:
 	/** Returns CameraBoom subobject **/

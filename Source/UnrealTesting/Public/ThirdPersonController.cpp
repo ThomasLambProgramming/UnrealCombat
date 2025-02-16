@@ -79,20 +79,8 @@ void AThirdPersonController::BeginPlay()
 
 void AThirdPersonController::Tick(float DeltaSeconds)
 {
-	if (ProjectileManager != nullptr)
-	{
-		if (ProjectileManager->currentProjectilesInScene.IsEmpty())
-			GEngine->AddOnScreenDebugMessage(10321, 10, FColor::Red, TEXT("empt projectiles"));
-		else
-		{
-			FString bastardValue = FString::FromInt((uint32)ProjectileManager->currentProjectilesInScene.Num());
-			GEngine->AddOnScreenDebugMessage(10321, 10, FColor::Red, bastardValue);
-		}
-	}
-	else
-		GEngine->AddOnScreenDebugMessage(10321, 10, FColor::Red, TEXT("No projectile Manager on player"));
-	GEngine->AddOnScreenDebugMessage(5, 5, FColor::Blue, GetActorLocation().ToString());
 	Super::Tick(DeltaSeconds);
+	shootingTimer += DeltaSeconds;
 	if (IsAttacking && selectedAiIndex != -1)
 	{
 		attackTimer += GetWorld()->DeltaTimeSeconds;
@@ -182,6 +170,7 @@ void AThirdPersonController::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AThirdPersonController::Attack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Ongoing, this, &AThirdPersonController::Attack);
 		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AThirdPersonController::StopAttack);
 		
 		EnhancedInputComponent->BindAction(CounterAction, ETriggerEvent::Started, this, &AThirdPersonController::CounterAttack);
@@ -249,8 +238,10 @@ void AThirdPersonController::Look(const FInputActionValue& Value)
 
 void AThirdPersonController::Attack(const FInputActionValue& Value)
 {
-	if (IsAttacking)
+	if (IsAttacking || shootingTimer < (1.0f / attackSpeed))
 		return;
+
+	shootingTimer = 0;
 	
 	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
 	projectileToFire->SetActorLocation(GetActorLocation() + FVector(0,0,50) + GetFollowCamera()->GetForwardVector() * 80);
@@ -271,9 +262,9 @@ void AThirdPersonController::Attack(const FInputActionValue& Value)
 		hitLocation = hitResult.Location;
 	else
 		hitLocation = raycastEndLocation;
-	//DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
+	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
 
-	FVector directionToFire = hitLocation - GetActorLocation();
+	FVector directionToFire = hitLocation - projectileToFire->GetActorLocation();
 	directionToFire.Normalize();
 		
 	//FVector directionToFireAlignedWithCamera
