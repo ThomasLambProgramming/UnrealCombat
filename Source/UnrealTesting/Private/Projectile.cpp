@@ -49,9 +49,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		return;
 
 	//for now hide the projectile once it hits the enemy.
+	enemyHit->DamageAi(10);
 	ResetProjectile();
-
-	
 }
 
 // Called when the game starts or when spawned

@@ -1,8 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
 #include "ThirdPersonController.h"
-
-#include <string>
-
 #include "AIManager.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
@@ -16,10 +12,6 @@
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
-
-//////////////////////////////////////////////////////////////////////////
-// AArkhamAttemptCharacter
-
 AThirdPersonController::AThirdPersonController()
 {
 	// Set size for collision capsule
@@ -54,7 +46,6 @@ AThirdPersonController::AThirdPersonController()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -107,15 +98,14 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 		}
 		return;
 	}
-
-	cameraForwardDirection = FollowCamera->GetComponentToWorld().GetRotation().GetForwardVector();
+	
+	FVector cameraForwardDirection = FollowCamera->GetComponentToWorld().GetRotation().GetForwardVector();
 	cameraForwardDirection.Z = 0;
 	cameraForwardDirection.Normalize();
-	cameraRightDirection = FollowCamera->GetComponentToWorld().GetRotation().GetRightVector();
+	FVector cameraRightDirection = FollowCamera->GetComponentToWorld().GetRotation().GetRightVector();
 	cameraRightDirection.Z = 0;
 	cameraRightDirection.Normalize();
 
-	//Have selected ai. selected ai is removed
 	if (CurrentInputDirection.Length() < 0.1f)
 	{
 		selectedAiIndex = 0;	
@@ -124,13 +114,14 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 	
 	FVector inputDirectionInWorld = (cameraForwardDirection * CurrentInputDirection.Y + cameraRightDirection * CurrentInputDirection.X);
 	inputDirectionInWorld.Normalize();
-	//DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + inputDirectionInWorld * 200, FColor::Red);
 
 	int closestEnemy = 0;
 	//Dot product will always give [-1, 1].
 	float previousDot = -2;
     for (int i = 0; i < AiManager->AiActorsInMap.Num(); ++i)
 	{
+    	if (AiManager->AiActorsInMap[i] == nullptr)
+    		continue;
 		float dotProduct = inputDirectionInWorld.Dot((AiManager->AiActorsInMap[i]->GetActorLocation() - GetActorLocation()).GetSafeNormal());
 		if (dotProduct > previousDot)
 		{
@@ -139,56 +130,6 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 		}
 	}
 	selectedAiIndex = closestEnemy;	
-	//DrawDebugSphere(GetWorld(), AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation(), 20, 10, FColor::Cyan);
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// Input
-
-void AThirdPersonController::NotifyControllerChanged()
-{
-	Super::NotifyControllerChanged();
-
-	// Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
-}
-
-void AThirdPersonController::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
-		// Jumping
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-		
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AThirdPersonController::Attack);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Ongoing, this, &AThirdPersonController::Attack);
-		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AThirdPersonController::StopAttack);
-		
-		EnhancedInputComponent->BindAction(CounterAction, ETriggerEvent::Started, this, &AThirdPersonController::CounterAttack);
-		
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AThirdPersonController::Interact);
-
-		// Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPersonController::Move);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &AThirdPersonController::MoveCancelled);
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AThirdPersonController::MoveCancelled);
-
-		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPersonController::Look);
-	}
-	else
-	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
-	}
 }
 
 void AThirdPersonController::Move(const FInputActionValue& Value)
@@ -240,7 +181,6 @@ void AThirdPersonController::Attack(const FInputActionValue& Value)
 {
 	if (IsAttacking || shootingTimer < (1.0f / attackSpeed))
 		return;
-
 	shootingTimer = 0;
 	
 	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
@@ -250,28 +190,21 @@ void AThirdPersonController::Attack(const FInputActionValue& Value)
 	projectileToFire->ProjectileMovement->ResetInterpolation();
 	projectileToFire->ProjectileMovement->SetUpdatedComponent(projectileToFire->GetRootComponent());
 
-	//Get the camera forward and location, get current character location, raycast till an object is found/certain distance away (sky),
-	//Raycastlocation (camera positon + cameraforward) - current character location normalized * force.
 	FHitResult hitResult;
 	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 2000;
 	FCollisionQueryParams traceParams = FCollisionQueryParams(TEXT("CrosshairTrace"), true, this);
 	GetWorld()->LineTraceSingleByChannel(hitResult, GetFollowCamera()->GetComponentLocation(), raycastEndLocation, TraceChannelProperty, traceParams);
 
-	FVector hitLocation = FVector(0,0,0);
+	FVector hitLocation;
 	if (hitResult.bBlockingHit)
 		hitLocation = hitResult.Location;
 	else
 		hitLocation = raycastEndLocation;
-	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
+	//DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
 
 	FVector directionToFire = hitLocation - projectileToFire->GetActorLocation();
 	directionToFire.Normalize();
-		
-	//FVector directionToFireAlignedWithCamera
 	projectileToFire->ProjectileMovement->Velocity = directionToFire * 5000;
-
-	//GEngine->AddOnScreenDebugMessage(10123543, 5, FColor::Blue, FString::FromInt(projectileToFire->ProjectileMovement->HasStoppedSimulation()));
-	
 }
 
 void AThirdPersonController::StopAttack(const FInputActionValue& Value)
@@ -284,11 +217,51 @@ void AThirdPersonController::CounterAttack(const FInputActionValue& Value)
 	{
 		IsAttacking = true;
 		attackTimer = 0;
-		startingLocation = GetActorLocation() + attackVerticalOffset;
+		startingLocation = GetActorLocation();
 	}
 }
 
 void AThirdPersonController::Interact(const FInputActionValue& Value)
 {
+}
+
+void AThirdPersonController::NotifyControllerChanged()
+{
+	Super::NotifyControllerChanged();
+
+	// Add Input Mapping Context
+	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		}
+	}
+}
+
+void AThirdPersonController::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	// Set up action bindings
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
+		
+		// Jumping
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
+		
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AThirdPersonController::Attack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Ongoing, this, &AThirdPersonController::Attack);
+		EnhancedInputComponent->BindAction(AttackAction, ETriggerEvent::Completed, this, &AThirdPersonController::StopAttack);
+		
+		EnhancedInputComponent->BindAction(CounterAction, ETriggerEvent::Started, this, &AThirdPersonController::CounterAttack);
+		
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AThirdPersonController::Interact);
+		// Moving
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AThirdPersonController::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Canceled, this, &AThirdPersonController::MoveCancelled);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AThirdPersonController::MoveCancelled);
+		// Looking
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPersonController::Look);
+	}
 }
 

@@ -21,83 +21,61 @@ class AThirdPersonController : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Camera boom positioning the camera behind the character */
+	//COMPONENTS-------
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
 	
-	/** MappingContext */
+	//INPUT--------
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
-
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
-
-	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
-
-	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* AttackAction;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CounterAction;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
+
 	
 	UPROPERTY(EditAnywhere, Category="Collision")
 	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
-	
-	FVector2D CurrentInputDirection = FVector2D(0,0);
-	FVector cameraForwardDirection = FVector(1,0,0);
-	FVector cameraRightDirection = FVector(0,1,0);
+
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float maximumDistanceForEnemyHit = 300;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float attackSpeed = 4;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	UCurveFloat* powerCurveOnHit;
-	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float attackDuration;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float attackLerpingMinDistance = 100;
 
-	//For some reason the lerping when attacking lowers the player character by a very small amount.
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
-	FVector attackVerticalOffset= FVector(0,0,10);
-
-	int selectedAiIndex = -1;
-	
 public:
 	AThirdPersonController();
 	void Tick(float DeltaSeconds) override;
+	
+	FORCEINLINE USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 protected:
-	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 	void MoveCancelled(const FInputActionValue& Value);
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 	
 	void Attack(const FInputActionValue& Value);
 	void StopAttack(const FInputActionValue& Value);
 	void CounterAttack(const FInputActionValue& Value);
 	void Interact(const FInputActionValue& Value);
-
-protected:
 
 	void BeginPlay() override;
 	virtual void NotifyControllerChanged() override;
@@ -110,12 +88,8 @@ private:
 	float attackTimer = 0;
 	FVector startingLocation;
 	float shootingTimer = 0;
-	
-public:
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FVector2D CurrentInputDirection = FVector2D(0,0);
+	int selectedAiIndex = -1;
 };
 
 

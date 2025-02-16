@@ -34,7 +34,11 @@ AStandardAi::AStandardAi()
 void AStandardAi::BeginPlay()
 {
 	Super::BeginPlay();
+}
 
+//Have the enemies health bar appear if its the first time they are being shot
+void AStandardAi::RegisterDamageToUI()
+{
 }
 
 // Called every frame
@@ -49,5 +53,18 @@ void AStandardAi::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+}
+
+void AStandardAi::DamageAi(float damageAmount)
+{
+	CurrentHealth -= damageAmount;
+	if (CurrentHealth <= 0)
+		Destroy();
+	OnAiHealthChangedDelegate.Broadcast();
+}
+
+//separate function to possibly cause a different explosion if the damage was double their health bar or something.
+void AStandardAi::KillEnemyInstantly()
+{
 }
 
