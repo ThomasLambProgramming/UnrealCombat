@@ -41,13 +41,8 @@ void AProjectile::ResetProjectile()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	// Only add impulse and destroy projectile if we hit a physics
-	//if ((OtherActor != nullptr) && (OtherActor != this) && (OtherComp != nullptr) && OtherComp->IsSimulatingPhysics())
-	//{
-	//	OtherComp->AddImpulseAtLocation(GetVelocity() * 100.0f, GetActorLocation());
-	//
-	//	Destroy();
-	//}
+	//add damage. here other actor is the ai if it hits. do a cast check.
+	GEngine->AddOnScreenDebugMessage(696969, 5, FColor::Blue, OtherActor->GetActorNameOrLabel());
 }
 
 // Called when the game starts or when spawned
