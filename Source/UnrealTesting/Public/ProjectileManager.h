@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Projectile.h"
 #include "GameFramework/Actor.h"
-#include "ProjectileData.h"
 #include "ProjectileManager.generated.h"
 
 UCLASS()
@@ -15,15 +14,12 @@ class UNREALTESTING_API AProjectileManager : public AActor
 
 public:
 	AProjectileManager();
-
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= defaults, meta = (AllowPrivateAccess = true))
-	FProjectileData defaultProjectileData;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= AI, meta = (AllowPrivateAccess = true))
 	int MaxProjectilesInScene;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<class AProjectile> defaultProjectile;
+	TSubclassOf<AProjectile> defaultProjectile;
 	
 	int projectileIndex = 0;
 	TArray<AProjectile*> currentProjectilesInScene;
