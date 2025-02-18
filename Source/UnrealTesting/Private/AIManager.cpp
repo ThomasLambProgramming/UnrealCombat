@@ -22,18 +22,48 @@ void AAIManager::BeginPlay()
 
 	//Spawn 4 base ai agents around the 0,0,0 location 
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[0]);
+	aiAdded->aiManager = this;
+	
 	spawnLocation.X = -500;
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[1]);
+	aiAdded->aiManager = this;
+	
 	spawnLocation.X = 0;
 	spawnLocation.Y = -500;
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[2]);
+	aiAdded->aiManager = this;
+	
 	spawnLocation.Y = 500;
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[3]);
+	aiAdded->aiManager = this;
 }
 
 // Called every frame
 void AAIManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AAIManager::DeleteAi(AStandardAi* index)
+{
+	int previousCount= AiActorsInMap.Num();
+
+	for (int i = 0; i < AiActorsInMap.Num(); i++)
+	{
+		if (AiActorsInMap[i] == index)
+		{
+			AiActorsInMap[i]->Destroy();
+			AiActorsInMap.RemoveAt(i, 1, EAllowShrinking::Yes);
+			GEngine->AddOnScreenDebugMessage(24368085, 5, FColor::Blue, TEXT("FOUND AI AND DELETED"));
+		}
+	}
+	
+	int currentCount = AiActorsInMap.Num();
+
+	GEngine->AddOnScreenDebugMessage(24368079, 5, FColor::Blue, TEXT("AICOUNTONDELETE") + FString::FromInt(previousCount) + " " + FString::FromInt(currentCount) );
 }
 

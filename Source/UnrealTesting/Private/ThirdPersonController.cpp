@@ -72,7 +72,7 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	shootingTimer += DeltaSeconds;
-	if (IsAttacking && selectedAiIndex != -1)
+	if (IsAttacking && selectedAiIndex > -1 && AiManager->AiActorsInMap.Num() > 0)
 	{
 		attackTimer += GetWorld()->DeltaTimeSeconds;
 		FVector currentActorLocation = GetActorLocation();
@@ -115,6 +115,11 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 	FVector inputDirectionInWorld = (cameraForwardDirection * CurrentInputDirection.Y + cameraRightDirection * CurrentInputDirection.X);
 	inputDirectionInWorld.Normalize();
 
+	if (AiManager->AiActorsInMap.Num() <= 0)
+	{
+		selectedAiIndex = -1;
+		return;
+	}
 	int closestEnemy = 0;
 	//Dot product will always give [-1, 1].
 	float previousDot = -2;
@@ -213,7 +218,7 @@ void AThirdPersonController::StopAttack(const FInputActionValue& Value)
 
 void AThirdPersonController::CounterAttack(const FInputActionValue& Value)
 {
-	if (selectedAiIndex != -1 && IsAttacking == false)
+	if (selectedAiIndex > -1 && IsAttacking == false && AiManager->AiActorsInMap.Num() < 0)
 	{
 		IsAttacking = true;
 		attackTimer = 0;

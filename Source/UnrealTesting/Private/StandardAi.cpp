@@ -58,9 +58,9 @@ void AStandardAi::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 void AStandardAi::DamageAi(float damageAmount)
 {
 	CurrentHealth -= damageAmount;
-	if (CurrentHealth <= 0)
-		Destroy();
 	OnAiHealthChangedDelegate.Broadcast();
+	if (CurrentHealth <= 0)
+		aiManager->DeleteAi(this);
 }
 
 //separate function to possibly cause a different explosion if the damage was double their health bar or something.

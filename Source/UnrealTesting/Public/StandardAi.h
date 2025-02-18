@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AIManager.h"
 #include "GameFramework/Character.h"
 #include "StandardAi.generated.h"
 
@@ -20,6 +21,8 @@ public:
 	float MaxHealth= 100;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float CurrentHealth = 100;
+
+	AAIManager* aiManager;
 
 protected:
 	// Called when the game starts or when spawned
