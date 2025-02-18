@@ -53,19 +53,67 @@ AThirdPersonController::AThirdPersonController()
 void AThirdPersonController::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	attackLerpingMaxDistanceSquared = attackLerpingMaxDistance * attackLerpingMaxDistance;
 	AActor* aiManager = UGameplayStatics::GetActorOfClass(GetWorld(), AAIManager::StaticClass());
 	AActor* projectileManager = UGameplayStatics::GetActorOfClass(GetWorld(), AProjectileManager::StaticClass());
-	if (aiManager == NULL)
-	{
-		GEngine->AddOnScreenDebugMessage(4, 10, FColor::Red, TEXT("DID NOT FIND AI MANAGER"));
-		return;
-	}
-	
 	ProjectileManager = Cast<AProjectileManager>(projectileManager);
 	AiManager = Cast<AAIManager>(aiManager);
-	if (AiManager != NULL && AiManager->AiActorsInMap.Num() > 0)
-		GEngine->AddOnScreenDebugMessage(4, 10, FColor::Red, TEXT("Found and casted ai manager"));
+}
+
+bool AThirdPersonController::FindClosestEnemy()
+{
+	if (CurrentInputDirection.Length() < 0.1f || AiManager->AiActorsInMap.Num() <= 0)
+	{
+		selectedAiIndex = -1;	
+		return false;
+	}
+	
+	FVector cameraForwardDirection = FollowCamera->GetComponentToWorld().GetRotation().GetForwardVector();
+	cameraForwardDirection.Z = 0;
+	cameraForwardDirection.Normalize();
+	FVector cameraRightDirection = FollowCamera->GetComponentToWorld().GetRotation().GetRightVector();
+	cameraRightDirection.Z = 0;
+	cameraRightDirection.Normalize();
+	
+	FVector inputDirectionInWorld = (cameraForwardDirection * CurrentInputDirection.Y + cameraRightDirection * CurrentInputDirection.X);
+	inputDirectionInWorld = inputDirectionInWorld.GetSafeNormal();
+
+	
+	DrawDebugSphere(GetWorld(), inputDirectionInWorld * 100 + GetActorLocation(), 30, 20, FColor::Cyan);
+
+	int closestEnemy = -1000;
+	//Dot product will always give [-1, 1].
+	float previousDot = FLT_MIN;
+	for (int i = 0; i < AiManager->AiActorsInMap.Num(); ++i)
+	{
+		
+		FVector difference = AiManager->AiActorsInMap[i]->GetActorLocation() - GetActorLocation(); 
+		//GEngine->AddOnScreenDebugMessage(i + 500, 5, FColor::Blue, TEXT("Difference ActorLoc:") + GetActorLocation().ToString() + " AILoc:" + AiManager->AiActorsInMap[i]->GetActorLocation().ToString() + "Difference:" + FString::FromInt(difference.Length()));
+		float distance = difference.SquaredLength();
+		if (distance > attackLerpingMaxDistanceSquared)
+			continue;
+		
+		float dotProduct = inputDirectionInWorld.Dot(difference.GetSafeNormal());
+		//GEngine->AddOnScreenDebugMessage(i + 600, 5, FColor::Blue, TEXT("Dot Product:") + FString::FromInt(dotProduct * 100));
+		if (dotProduct > previousDot && dotProduct > MinimumAllowedDashDotProduct)
+		{
+			previousDot = dotProduct;
+			closestEnemy = i;
+			GEngine->AddOnScreenDebugMessage(i + 700, 5, FColor::Blue, TEXT("New closest given:") + FString::FromInt(dotProduct * 100) + FString::FromInt(closestEnemy));
+		}
+		//GEngine->AddOnScreenDebugMessage(i + 50000, 5, FColor::Blue, TEXT("Previous dot") + FString::FromInt(previousDot));
+	}
+	//GEngine->AddOnScreenDebugMessage(500000, 5, FColor::Blue, TEXT("Attack max distance") + FString::FromInt(attackLerpingMaxDistanceSquared));
+	//GEngine->AddOnScreenDebugMessage(5000, 5, FColor::Blue, TEXT("Closest Enemy") + FString::FromInt(closestEnemy));
+	if (closestEnemy <= -1)
+	{
+		selectedAiIndex = -1;	
+		return false;
+	}
+
+	DrawDebugSphere(GetWorld(), AiManager->AiActorsInMap[closestEnemy]->GetActorLocation(), 30, 20, FColor::Cyan);
+	selectedAiIndex = closestEnemy;
+	return true;
 }
 
 void AThirdPersonController::Tick(float DeltaSeconds)
@@ -74,6 +122,7 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 	shootingTimer += DeltaSeconds;
 	if (IsAttacking && selectedAiIndex > -1 && AiManager->AiActorsInMap.Num() > 0)
 	{
+		GEngine->AddOnScreenDebugMessage(345978057, 5, FColor::Blue, TEXT("Lerping Tick"));
 		attackTimer += GetWorld()->DeltaTimeSeconds;
 		FVector currentActorLocation = GetActorLocation();
 		if (FVector::Distance(currentActorLocation, AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation()) < attackLerpingMinDistance)
@@ -98,43 +147,8 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 		}
 		return;
 	}
-	
-	FVector cameraForwardDirection = FollowCamera->GetComponentToWorld().GetRotation().GetForwardVector();
-	cameraForwardDirection.Z = 0;
-	cameraForwardDirection.Normalize();
-	FVector cameraRightDirection = FollowCamera->GetComponentToWorld().GetRotation().GetRightVector();
-	cameraRightDirection.Z = 0;
-	cameraRightDirection.Normalize();
 
-	if (CurrentInputDirection.Length() < 0.1f)
-	{
-		selectedAiIndex = 0;	
-		return;
-	}
-	
-	FVector inputDirectionInWorld = (cameraForwardDirection * CurrentInputDirection.Y + cameraRightDirection * CurrentInputDirection.X);
-	inputDirectionInWorld.Normalize();
-
-	if (AiManager->AiActorsInMap.Num() <= 0)
-	{
-		selectedAiIndex = -1;
-		return;
-	}
-	int closestEnemy = 0;
-	//Dot product will always give [-1, 1].
-	float previousDot = -2;
-    for (int i = 0; i < AiManager->AiActorsInMap.Num(); ++i)
-	{
-    	if (AiManager->AiActorsInMap[i] == nullptr)
-    		continue;
-		float dotProduct = inputDirectionInWorld.Dot((AiManager->AiActorsInMap[i]->GetActorLocation() - GetActorLocation()).GetSafeNormal());
-		if (dotProduct > previousDot)
-		{
-			previousDot = dotProduct;
-			closestEnemy = i;
-		}
-	}
-	selectedAiIndex = closestEnemy;	
+	FindClosestEnemy();
 }
 
 void AThirdPersonController::Move(const FInputActionValue& Value)
@@ -205,7 +219,7 @@ void AThirdPersonController::Attack(const FInputActionValue& Value)
 		hitLocation = hitResult.Location;
 	else
 		hitLocation = raycastEndLocation;
-	//DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
+	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
 
 	FVector directionToFire = hitLocation - projectileToFire->GetActorLocation();
 	directionToFire.Normalize();
@@ -218,11 +232,12 @@ void AThirdPersonController::StopAttack(const FInputActionValue& Value)
 
 void AThirdPersonController::CounterAttack(const FInputActionValue& Value)
 {
-	if (selectedAiIndex > -1 && IsAttacking == false && AiManager->AiActorsInMap.Num() < 0)
+	if (selectedAiIndex > -1 && IsAttacking == false && AiManager->AiActorsInMap.Num() > 0)
 	{
 		IsAttacking = true;
 		attackTimer = 0;
 		startingLocation = GetActorLocation();
+		GEngine->AddOnScreenDebugMessage(8079435, 5, FColor::Blue, TEXT("Starting Dash Attack"));
 	}
 }
 

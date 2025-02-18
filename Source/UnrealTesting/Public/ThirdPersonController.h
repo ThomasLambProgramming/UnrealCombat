@@ -58,7 +58,12 @@ class AThirdPersonController : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float attackDuration;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
+	float attackLerpingMaxDistance = 100;
+	float attackLerpingMaxDistanceSquared = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float attackLerpingMinDistance = 100;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
+	float MinimumAllowedDashDotProduct = 0.8f;
 
 public:
 	AThirdPersonController();
@@ -78,6 +83,7 @@ protected:
 	void Interact(const FInputActionValue& Value);
 
 	void BeginPlay() override;
+	bool FindClosestEnemy();
 	virtual void NotifyControllerChanged() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
