@@ -76,7 +76,8 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void MoveCancelled(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
-	
+	void FireEquippedSpell();
+
 	void Attack(const FInputActionValue& Value);
 	void StopAttack(const FInputActionValue& Value);
 	void CounterAttack(const FInputActionValue& Value);
@@ -84,13 +85,14 @@ protected:
 
 	void BeginPlay() override;
 	bool FindClosestEnemy();
+	void ProcessLerpDash();
 	virtual void NotifyControllerChanged() override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
 	AAIManager* AiManager;
 	AProjectileManager* ProjectileManager;
-	bool IsAttacking = false;
+	bool IsDashAttacking = false;
 	float attackTimer = 0;
 	FVector startingLocation;
 	float shootingTimer = 0;

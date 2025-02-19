@@ -60,6 +60,15 @@ void AThirdPersonController::BeginPlay()
 	AiManager = Cast<AAIManager>(aiManager);
 }
 
+void AThirdPersonController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	shootingTimer += DeltaSeconds;
+	ProcessLerpDash();
+	if (!IsDashAttacking)
+		FindClosestEnemy();
+}
+
 bool AThirdPersonController::FindClosestEnemy()
 {
 	if (CurrentInputDirection.Length() < 0.1f || AiManager->AiActorsInMap.Num() <= 0)
@@ -79,32 +88,25 @@ bool AThirdPersonController::FindClosestEnemy()
 	inputDirectionInWorld = inputDirectionInWorld.GetSafeNormal();
 
 	
-	DrawDebugSphere(GetWorld(), inputDirectionInWorld * 100 + GetActorLocation(), 30, 20, FColor::Cyan);
-
+	//DrawDebugSphere(GetWorld(), inputDirectionInWorld * 100 + GetActorLocation(), 30, 20, FColor::Cyan);
 	int closestEnemy = -1000;
-	//Dot product will always give [-1, 1].
 	float previousDot = FLT_MIN;
 	for (int i = 0; i < AiManager->AiActorsInMap.Num(); ++i)
 	{
 		
 		FVector difference = AiManager->AiActorsInMap[i]->GetActorLocation() - GetActorLocation(); 
-		//GEngine->AddOnScreenDebugMessage(i + 500, 5, FColor::Blue, TEXT("Difference ActorLoc:") + GetActorLocation().ToString() + " AILoc:" + AiManager->AiActorsInMap[i]->GetActorLocation().ToString() + "Difference:" + FString::FromInt(difference.Length()));
 		float distance = difference.SquaredLength();
 		if (distance > attackLerpingMaxDistanceSquared)
 			continue;
 		
 		float dotProduct = inputDirectionInWorld.Dot(difference.GetSafeNormal());
-		//GEngine->AddOnScreenDebugMessage(i + 600, 5, FColor::Blue, TEXT("Dot Product:") + FString::FromInt(dotProduct * 100));
 		if (dotProduct > previousDot && dotProduct > MinimumAllowedDashDotProduct)
 		{
 			previousDot = dotProduct;
 			closestEnemy = i;
 			GEngine->AddOnScreenDebugMessage(i + 700, 5, FColor::Blue, TEXT("New closest given:") + FString::FromInt(dotProduct * 100) + FString::FromInt(closestEnemy));
 		}
-		//GEngine->AddOnScreenDebugMessage(i + 50000, 5, FColor::Blue, TEXT("Previous dot") + FString::FromInt(previousDot));
 	}
-	//GEngine->AddOnScreenDebugMessage(500000, 5, FColor::Blue, TEXT("Attack max distance") + FString::FromInt(attackLerpingMaxDistanceSquared));
-	//GEngine->AddOnScreenDebugMessage(5000, 5, FColor::Blue, TEXT("Closest Enemy") + FString::FromInt(closestEnemy));
 	if (closestEnemy <= -1)
 	{
 		selectedAiIndex = -1;	
@@ -116,45 +118,67 @@ bool AThirdPersonController::FindClosestEnemy()
 	return true;
 }
 
-void AThirdPersonController::Tick(float DeltaSeconds)
+void AThirdPersonController::ProcessLerpDash()
 {
-	Super::Tick(DeltaSeconds);
-	shootingTimer += DeltaSeconds;
-	if (IsAttacking && selectedAiIndex > -1 && AiManager->AiActorsInMap.Num() > 0)
-	{
-		GEngine->AddOnScreenDebugMessage(345978057, 5, FColor::Blue, TEXT("Lerping Tick"));
-		attackTimer += GetWorld()->DeltaTimeSeconds;
-		FVector currentActorLocation = GetActorLocation();
-		if (FVector::Distance(currentActorLocation, AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation()) < attackLerpingMinDistance)
-		{
-			IsAttacking = false;
-		}
-		else
-		{
-			//lerp between where we started the attack and where the ai enemy currently is based on the powercurve so extra "style" can be added and modified without changing code.
-			float getLerpAmount = powerCurveOnHit->GetFloatValue(attackTimer / attackDuration);
-			FVector lerpGoalLocation = AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation();
-			//for now since it is a flat surface the z location has to be the same since the mesh offsets are ever so slightly off causing the player to be a few units into the ground.
-			lerpGoalLocation.Z = startingLocation.Z;
-			FRotator goalRotation = (lerpGoalLocation - GetActorLocation()).ToOrientationRotator();
-			SetActorRotation(FMath::Lerp(GetActorRotation(), goalRotation, getLerpAmount));
-			SetActorLocation(FMath::Lerp(startingLocation, lerpGoalLocation, getLerpAmount));
-			//We dont need to do ai detection if we are already going to attack an enemy.
-			if (attackTimer >= attackDuration)
-			{
-				IsAttacking = false;
-			}
-		}
+	if (!IsDashAttacking || selectedAiIndex <= -1 && AiManager->AiActorsInMap.Num() <= 0)
 		return;
+	
+	GEngine->AddOnScreenDebugMessage(345978057, 5, FColor::Blue, TEXT("Lerping Tick"));
+	attackTimer += GetWorld()->DeltaTimeSeconds;
+	FVector currentActorLocation = GetActorLocation();
+	if (FVector::Distance(currentActorLocation, AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation()) < attackLerpingMinDistance)
+	{
+		IsDashAttacking = false;
 	}
-
-	FindClosestEnemy();
+	else
+	{
+		//lerp between where we started the attack and where the ai enemy currently is based on the powercurve so extra "style" can be added and modified without changing code.
+		float getLerpAmount = powerCurveOnHit->GetFloatValue(attackTimer / attackDuration);
+		FVector lerpGoalLocation = AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation();
+		//for now since it is a flat surface the z location has to be the same since the mesh offsets are ever so slightly off causing the player to be a few units into the ground.
+		lerpGoalLocation.Z = startingLocation.Z;
+		FRotator goalRotation = (lerpGoalLocation - GetActorLocation()).ToOrientationRotator();
+		SetActorRotation(FMath::Lerp(GetActorRotation(), goalRotation, getLerpAmount));
+		SetActorLocation(FMath::Lerp(startingLocation, lerpGoalLocation, getLerpAmount));
+		//We dont need to do ai detection if we are already going to attack an enemy.
+		if (attackTimer >= attackDuration)
+		{
+			IsDashAttacking = false;
+		}
+	}
 }
+
+void AThirdPersonController::FireEquippedSpell()
+{
+	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
+	projectileToFire->SetActorLocation(GetActorLocation() + FVector(0,0,50) + GetFollowCamera()->GetForwardVector() * 80);
+	projectileToFire->SetActorRotation(GetFollowCamera()->GetForwardVector().ToOrientationRotator());
+	projectileToFire->ProjectileMovement->bInterpMovement = false;
+	projectileToFire->ProjectileMovement->ResetInterpolation();
+	projectileToFire->ProjectileMovement->SetUpdatedComponent(projectileToFire->GetRootComponent());
+
+	FHitResult hitResult;
+	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 2000;
+	FCollisionQueryParams traceParams = FCollisionQueryParams(TEXT("CrosshairTrace"), true, this);
+	GetWorld()->LineTraceSingleByChannel(hitResult, GetFollowCamera()->GetComponentLocation(), raycastEndLocation, TraceChannelProperty, traceParams);
+
+	FVector hitLocation;
+	if (hitResult.bBlockingHit)
+		hitLocation = hitResult.Location;
+	else
+		hitLocation = raycastEndLocation;
+	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
+
+	FVector directionToFire = hitLocation - projectileToFire->GetActorLocation();
+	directionToFire.Normalize();
+	projectileToFire->ProjectileMovement->Velocity = directionToFire * 5000;
+}
+
 
 void AThirdPersonController::Move(const FInputActionValue& Value)
 {
 	//Attacking should not be able to be changed once the attack has started.
-	if (IsAttacking)
+	if (IsDashAttacking)
 		return;
 	
 	// input is a Vector2D
@@ -198,32 +222,10 @@ void AThirdPersonController::Look(const FInputActionValue& Value)
 
 void AThirdPersonController::Attack(const FInputActionValue& Value)
 {
-	if (IsAttacking || shootingTimer < (1.0f / attackSpeed))
+	if (IsDashAttacking || shootingTimer < (1.0f / attackSpeed))
 		return;
 	shootingTimer = 0;
-	
-	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
-	projectileToFire->SetActorLocation(GetActorLocation() + FVector(0,0,50) + GetFollowCamera()->GetForwardVector() * 80);
-	projectileToFire->SetActorRotation(GetFollowCamera()->GetForwardVector().ToOrientationRotator());
-	projectileToFire->ProjectileMovement->bInterpMovement = false;
-	projectileToFire->ProjectileMovement->ResetInterpolation();
-	projectileToFire->ProjectileMovement->SetUpdatedComponent(projectileToFire->GetRootComponent());
-
-	FHitResult hitResult;
-	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 2000;
-	FCollisionQueryParams traceParams = FCollisionQueryParams(TEXT("CrosshairTrace"), true, this);
-	GetWorld()->LineTraceSingleByChannel(hitResult, GetFollowCamera()->GetComponentLocation(), raycastEndLocation, TraceChannelProperty, traceParams);
-
-	FVector hitLocation;
-	if (hitResult.bBlockingHit)
-		hitLocation = hitResult.Location;
-	else
-		hitLocation = raycastEndLocation;
-	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
-
-	FVector directionToFire = hitLocation - projectileToFire->GetActorLocation();
-	directionToFire.Normalize();
-	projectileToFire->ProjectileMovement->Velocity = directionToFire * 5000;
+	FireEquippedSpell();
 }
 
 void AThirdPersonController::StopAttack(const FInputActionValue& Value)
@@ -232,12 +234,12 @@ void AThirdPersonController::StopAttack(const FInputActionValue& Value)
 
 void AThirdPersonController::CounterAttack(const FInputActionValue& Value)
 {
-	if (selectedAiIndex > -1 && IsAttacking == false && AiManager->AiActorsInMap.Num() > 0)
+	if (selectedAiIndex > -1 && IsDashAttacking == false && AiManager->AiActorsInMap.Num() > 0)
 	{
-		IsAttacking = true;
+		IsDashAttacking = true;
 		attackTimer = 0;
 		startingLocation = GetActorLocation();
-		GEngine->AddOnScreenDebugMessage(8079435, 5, FColor::Blue, TEXT("Starting Dash Attack"));
+		//GEngine->AddOnScreenDebugMessage(8079435, 5, FColor::Blue, TEXT("Starting Dash Attack"));
 	}
 }
 
