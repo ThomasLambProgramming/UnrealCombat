@@ -30,5 +30,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	//Searches array for the ai.
 	void DeleteAi(AStandardAi* index);
+	//Deleted ai from that index without searching.
+	void DeleteAi(int index);
 };

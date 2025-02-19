@@ -91,7 +91,17 @@ protected:
 
 private:
 	AAIManager* AiManager;
-	AProjectileManager* ProjectileManager;
+	//AProjectileManager* ProjectileManager;
+	
+	UPROPERTY(EditDefaultsOnly, Category=Projectile)
+	TSubclassOf<AProjectile> slotOneProjectile;
+	UPROPERTY(EditDefaultsOnly, Category=Projectile)
+	TSubclassOf<AProjectile> slotTwoProjectile;
+	UPROPERTY(EditDefaultsOnly, Category=Projectile)
+	TSubclassOf<AProjectile> slotThreeProjectile;
+
+	int currentlySelectedSlot = 0;
+	
 	bool IsDashAttacking = false;
 	float attackTimer = 0;
 	FVector startingLocation;

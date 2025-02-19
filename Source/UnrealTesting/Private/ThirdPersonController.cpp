@@ -55,8 +55,8 @@ void AThirdPersonController::BeginPlay()
 	Super::BeginPlay();
 	attackLerpingMaxDistanceSquared = attackLerpingMaxDistance * attackLerpingMaxDistance;
 	AActor* aiManager = UGameplayStatics::GetActorOfClass(GetWorld(), AAIManager::StaticClass());
-	AActor* projectileManager = UGameplayStatics::GetActorOfClass(GetWorld(), AProjectileManager::StaticClass());
-	ProjectileManager = Cast<AProjectileManager>(projectileManager);
+	//AActor* projectileManager = UGameplayStatics::GetActorOfClass(GetWorld(), AProjectileManager::StaticClass());
+	//ProjectileManager = Cast<AProjectileManager>(projectileManager);
 	AiManager = Cast<AAIManager>(aiManager);
 }
 
@@ -129,6 +129,8 @@ void AThirdPersonController::ProcessLerpDash()
 	if (FVector::Distance(currentActorLocation, AiManager->AiActorsInMap[selectedAiIndex]->GetActorLocation()) < attackLerpingMinDistance)
 	{
 		IsDashAttacking = false;
+		AiManager->DeleteAi(selectedAiIndex);
+		selectedAiIndex = 0;
 	}
 	else
 	{
@@ -144,24 +146,37 @@ void AThirdPersonController::ProcessLerpDash()
 		if (attackTimer >= attackDuration)
 		{
 			IsDashAttacking = false;
+			AiManager->DeleteAi(selectedAiIndex);
+			selectedAiIndex = 0;
 		}
 	}
 }
 
 void AThirdPersonController::FireEquippedSpell()
 {
-	AProjectile* projectileToFire = ProjectileManager->GetNewProjectile();
-	projectileToFire->SetActorLocation(GetActorLocation() + FVector(0,0,50) + GetFollowCamera()->GetForwardVector() * 80);
-	projectileToFire->SetActorRotation(GetFollowCamera()->GetForwardVector().ToOrientationRotator());
-	projectileToFire->ProjectileMovement->bInterpMovement = false;
-	projectileToFire->ProjectileMovement->ResetInterpolation();
-	projectileToFire->ProjectileMovement->SetUpdatedComponent(projectileToFire->GetRootComponent());
-
+	TSubclassOf<AProjectile> projectileToFire;
+	switch (currentlySelectedSlot)
+	{
+	case 0:
+		projectileToFire = slotOneProjectile;
+		break;
+	case 1:
+		projectileToFire = slotTwoProjectile;
+		break;
+	case 2:
+		projectileToFire = slotThreeProjectile;
+		break;
+	default:
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(4, 5, FColor::Red, TEXT("Tried to fire an unknown projectile slot, fix!"));
+		}
+	}
+	
 	FHitResult hitResult;
 	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 2000;
 	FCollisionQueryParams traceParams = FCollisionQueryParams(TEXT("CrosshairTrace"), true, this);
 	GetWorld()->LineTraceSingleByChannel(hitResult, GetFollowCamera()->GetComponentLocation(), raycastEndLocation, TraceChannelProperty, traceParams);
-
 	FVector hitLocation;
 	if (hitResult.bBlockingHit)
 		hitLocation = hitResult.Location;
@@ -169,9 +184,17 @@ void AThirdPersonController::FireEquippedSpell()
 		hitLocation = raycastEndLocation;
 	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
 
-	FVector directionToFire = hitLocation - projectileToFire->GetActorLocation();
+	FVector defaultProjectileLocation = GetActorLocation() + FVector(0,0,50) + GetFollowCamera()->GetForwardVector() * 80;
+	FVector directionToFire = hitLocation - defaultProjectileLocation;
 	directionToFire.Normalize();
-	projectileToFire->ProjectileMovement->Velocity = directionToFire * 5000;
+	
+	FRotator defaultProjectileRotation = directionToFire.ToOrientationRotator();
+	FActorSpawnParameters defaultProjectileSpawnParams;
+	AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation, defaultProjectileRotation, defaultProjectileSpawnParams);
+	test->ProjectileMovement->bInterpMovement = false;
+	test->ProjectileMovement->ResetInterpolation();
+	test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());
+	test->ProjectileMovement->Velocity = directionToFire * 5000;
 }
 
 

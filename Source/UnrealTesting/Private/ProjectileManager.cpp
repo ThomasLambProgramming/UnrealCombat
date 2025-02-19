@@ -17,9 +17,9 @@ AProjectileManager::AProjectileManager()
 
 void AProjectileManager::ResetProjectile(int a_index)
 {
-	currentProjectilesInScene[a_index]->SetActorLocation(defaultProjectileLocation);
-	currentProjectilesInScene[a_index]->SetActorRotation(defaultProjectileRotation);
-	currentProjectilesInScene[a_index]->ResetProjectile();
+	//currentProjectilesInScene[a_index]->SetActorLocation(defaultProjectileLocation);
+	//currentProjectilesInScene[a_index]->SetActorRotation(defaultProjectileRotation);
+	//currentProjectilesInScene[a_index]->ResetProjectile();
 }
 AProjectile* AProjectileManager::GetNewProjectile()
 {

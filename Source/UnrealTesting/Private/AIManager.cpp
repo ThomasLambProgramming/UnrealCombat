@@ -66,4 +66,13 @@ void AAIManager::DeleteAi(AStandardAi* index)
 
 	GEngine->AddOnScreenDebugMessage(24368079, 5, FColor::Blue, TEXT("AICOUNTONDELETE") + FString::FromInt(previousCount) + " " + FString::FromInt(currentCount) );
 }
+void AAIManager::DeleteAi(int index)
+{
+	int previousCount= AiActorsInMap.Num();
+    AiActorsInMap[index]->Destroy();
+    AiActorsInMap.RemoveAt(index, 1, EAllowShrinking::Yes);
+    GEngine->AddOnScreenDebugMessage(24368085, 5, FColor::Blue, TEXT("FOUND AI AND DELETED"));
+	int currentCount = AiActorsInMap.Num();
+	GEngine->AddOnScreenDebugMessage(24368079, 5, FColor::Blue, TEXT("AICOUNTONDELETE") + FString::FromInt(previousCount) + " " + FString::FromInt(currentCount) );
+}
 
