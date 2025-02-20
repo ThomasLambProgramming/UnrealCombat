@@ -307,6 +307,57 @@ void AThirdPersonController::SetupPlayerInputComponent(UInputComponent* PlayerIn
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &AThirdPersonController::MoveCancelled);
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AThirdPersonController::Look);
+		
+		EnhancedInputComponent->BindAction(Num1Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction1Pressed);
+		EnhancedInputComponent->BindAction(Num2Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction2Pressed);
+		EnhancedInputComponent->BindAction(Num3Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction3Pressed);
+		EnhancedInputComponent->BindAction(Num4Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction4Pressed);
+		EnhancedInputComponent->BindAction(Num5Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction5Pressed);
+		EnhancedInputComponent->BindAction(Num6Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction6Pressed);
+		EnhancedInputComponent->BindAction(Num7Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction7Pressed);
+		EnhancedInputComponent->BindAction(Num8Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction8Pressed);
+		EnhancedInputComponent->BindAction(Num9Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction9Pressed);
+		EnhancedInputComponent->BindAction(Num0Action, ETriggerEvent::Started, this, &AThirdPersonController::InputAction0Pressed);
 	}
 }
 
+void AThirdPersonController::InputAction1Pressed(const FInputActionValue& value)
+{
+	currentlySelectedSlot = 0;
+}
+void AThirdPersonController::InputAction2Pressed(const FInputActionValue& value)
+{
+	currentlySelectedSlot = 1;
+}
+void AThirdPersonController::InputAction3Pressed(const FInputActionValue& value)
+{
+	currentlySelectedSlot = 2;
+}
+void AThirdPersonController::InputAction4Pressed(const FInputActionValue& value)
+{
+	
+}
+void AThirdPersonController::InputAction5Pressed(const FInputActionValue& value)
+{
+	
+}
+void AThirdPersonController::InputAction6Pressed(const FInputActionValue& value)
+{
+	
+}
+void AThirdPersonController::InputAction7Pressed(const FInputActionValue& value)
+{
+	
+}
+void AThirdPersonController::InputAction8Pressed(const FInputActionValue& value)
+{
+	
+}
+void AThirdPersonController::InputAction9Pressed(const FInputActionValue& value)
+{
+	
+}
+void AThirdPersonController::InputAction0Pressed(const FInputActionValue& value)
+{
+	
+}
