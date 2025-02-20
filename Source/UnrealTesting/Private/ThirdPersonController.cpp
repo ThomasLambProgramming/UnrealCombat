@@ -191,13 +191,17 @@ void AThirdPersonController::FireEquippedSpell()
 	
 	FRotator defaultProjectileRotation = directionToFire.ToOrientationRotator();
 	FActorSpawnParameters defaultProjectileSpawnParams;
-	AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation, defaultProjectileRotation, defaultProjectileSpawnParams);
-	test->ProjectileMovement->bInterpMovement = false;
-	test->ProjectileMovement->ResetInterpolation();
-	test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());
-	test->ProjectileMovement->Velocity = directionToFire * currentSpellType->Speed;
-	//Give the new projectile the ai manager reference to track enemies.
-	test->SetupProjectile(AiManager);
+	for (int i = 0; i < currentSpellType->Multishot; ++i)
+	{
+		FVector positionOffet = FVector::UpVector.RotateAngleAxis((360.0f / currentSpellType->Multishot) * i, FVector(1,0,0));
+		AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation + positionOffet * 100, defaultProjectileRotation, defaultProjectileSpawnParams);
+		test->ProjectileMovement->bInterpMovement = false;
+		test->ProjectileMovement->ResetInterpolation();
+		test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());
+		test->ProjectileMovement->Velocity = directionToFire * currentSpellType->Speed;
+		//Give the new projectile the ai manager reference to track enemies.
+		test->SetupProjectile(AiManager);
+	}
 }
 
 

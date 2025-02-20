@@ -70,7 +70,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
-
+	if (Multishot <= 0)
+		Multishot = 1;
 	
 }
 
