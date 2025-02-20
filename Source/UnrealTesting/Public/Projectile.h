@@ -47,6 +47,9 @@ public:
 
 	void SetupProjectile(AAIManager* aiManager);
 
+	int bounceCount = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	int Multishot = 0;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float attacksPerSecond = 5;

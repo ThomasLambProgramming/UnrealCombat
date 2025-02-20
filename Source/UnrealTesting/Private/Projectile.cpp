@@ -47,7 +47,12 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	AStandardAi* enemyHit = Cast<AStandardAi>(OtherActor);
 	if (enemyHit == nullptr)
 	{
-		Destroy();	
+		if (BounceAmount > 0 && bounceCount < BounceAmount)
+		{
+			bounceCount++;
+		}
+		else
+			Destroy();
 		return;
 	}
 
