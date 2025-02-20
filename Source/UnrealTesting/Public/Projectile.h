@@ -3,10 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AIManager.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Projectile.generated.h"
+
+UENUM()
+enum TrackingState
+{
+	None = 0,
+	TrackAlly = 1,
+	TrackEnemy = 2,
+};
 
 UCLASS()
 class AProjectile : public AActor
@@ -28,25 +37,31 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	AAIManager* AIManager;
 public:
 	
 	UFUNCTION()
 	void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	
-	enum TrackingState
-	{
-		None = 0,
-		TrackAlly = 1,
-		TrackEnemy = 2,
-	};
-	
+
+	void SetupProjectile(AAIManager* aiManager);
+
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	float attacksPerSecond = 5;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float Speed = 100;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float Dropoff = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	FVector ArcingDirection = FVector(0,0,0);
-	TrackingState EntityTrackingState = TrackingState::None;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	TEnumAsByte<TrackingState> EntityTrackingState = TrackingState::None;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float Damage = 1;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float AoeRange = 0;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	int BounceAmount = 0;
 };

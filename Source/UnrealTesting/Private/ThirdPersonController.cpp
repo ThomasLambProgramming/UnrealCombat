@@ -53,6 +53,7 @@ AThirdPersonController::AThirdPersonController()
 void AThirdPersonController::BeginPlay()
 {
 	Super::BeginPlay();
+	currentSpellType = slotOneProjectile.GetDefaultObject();
 	attackLerpingMaxDistanceSquared = attackLerpingMaxDistance * attackLerpingMaxDistance;
 	AActor* aiManager = UGameplayStatics::GetActorOfClass(GetWorld(), AAIManager::StaticClass());
 	//AActor* projectileManager = UGameplayStatics::GetActorOfClass(GetWorld(), AProjectileManager::StaticClass());
@@ -194,7 +195,9 @@ void AThirdPersonController::FireEquippedSpell()
 	test->ProjectileMovement->bInterpMovement = false;
 	test->ProjectileMovement->ResetInterpolation();
 	test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());
-	test->ProjectileMovement->Velocity = directionToFire * 5000;
+	test->ProjectileMovement->Velocity = directionToFire * currentSpellType->Speed;
+	//Give the new projectile the ai manager reference to track enemies.
+	test->SetupProjectile(AiManager);
 }
 
 
@@ -245,7 +248,7 @@ void AThirdPersonController::Look(const FInputActionValue& Value)
 
 void AThirdPersonController::Attack(const FInputActionValue& Value)
 {
-	if (IsDashAttacking || shootingTimer < (1.0f / attackSpeed))
+	if (IsDashAttacking || shootingTimer < (1.0f / currentSpellType->attacksPerSecond))
 		return;
 	shootingTimer = 0;
 	FireEquippedSpell();
@@ -324,14 +327,17 @@ void AThirdPersonController::SetupPlayerInputComponent(UInputComponent* PlayerIn
 void AThirdPersonController::InputAction1Pressed(const FInputActionValue& value)
 {
 	currentlySelectedSlot = 0;
+	currentSpellType = slotOneProjectile.GetDefaultObject();
 }
 void AThirdPersonController::InputAction2Pressed(const FInputActionValue& value)
 {
 	currentlySelectedSlot = 1;
+	currentSpellType = slotTwoProjectile.GetDefaultObject();
 }
 void AThirdPersonController::InputAction3Pressed(const FInputActionValue& value)
 {
 	currentlySelectedSlot = 2;
+	currentSpellType = slotThreeProjectile.GetDefaultObject();
 }
 void AThirdPersonController::InputAction4Pressed(const FInputActionValue& value)
 {

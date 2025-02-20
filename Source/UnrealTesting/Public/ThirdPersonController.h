@@ -84,6 +84,7 @@ private:
 	TSubclassOf<AProjectile> slotThreeProjectile;
 
 	int currentlySelectedSlot = 0;
+	AProjectile* currentSpellType;
 	
 	bool IsDashAttacking = false;
 	float attackTimer = 0;

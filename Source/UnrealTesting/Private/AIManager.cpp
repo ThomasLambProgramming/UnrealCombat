@@ -1,6 +1,7 @@
 #include "AIManager.h"
 
 #include "StandardAi.h"
+#include "Kismet/GameplayStatics.h"
 #include "Tests/AutomationCommon.h"
 
 // Sets default values
@@ -20,25 +21,33 @@ void AAIManager::BeginPlay()
 	FRotator spawnRotation = FRotator(0,0,0);
 	FActorSpawnParameters defaultParams;
 
+	
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStandardAi::StaticClass(), AiActorsInMap);
+	for (int i = 0; i < AiActorsInMap.Num(); ++i)
+	{
+	    AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[i]);
+	    aiAdded->aiManager = this;
+	}
+
 	//Spawn 4 base ai agents around the 0,0,0 location 
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[0]);
+	AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
 	aiAdded->aiManager = this;
 	
 	spawnLocation.X = -500;
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[1]);
+	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
 	aiAdded->aiManager = this;
 	
 	spawnLocation.X = 0;
 	spawnLocation.Y = -500;
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[2]);
+	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
 	aiAdded->aiManager = this;
 	
 	spawnLocation.Y = 500;
 	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[3]);
+	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
 	aiAdded->aiManager = this;
 }
 

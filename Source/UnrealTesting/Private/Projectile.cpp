@@ -52,7 +52,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	}
 
 	//for now hide the projectile once it hits the enemy.
-	enemyHit->DamageAi(10);
+	enemyHit->DamageAi(Damage);
 	Destroy();
 }
 
@@ -66,5 +66,10 @@ void AProjectile::BeginPlay()
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AProjectile::SetupProjectile(AAIManager* aiManager)
+{
+	AIManager = aiManager;	
 }
 
