@@ -51,8 +51,13 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		return;
 	}
 
-	//for now hide the projectile once it hits the enemy.
-	enemyHit->DamageAi(Damage);
+	if (AoeRange > 0)
+	{
+		AIManager->DamageEnemiesInRadius(GetActorLocation(), AoeRange, Damage);	
+	}
+	else
+		enemyHit->DamageAi(Damage);
+	
 	Destroy();
 }
 
@@ -60,6 +65,8 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 void AProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+
+	
 }
 
 // Called every frame

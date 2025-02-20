@@ -34,4 +34,8 @@ public:
 	void DeleteAi(AStandardAi* index);
 	//Deleted ai from that index without searching.
 	void DeleteAi(int index);
+
+	AStandardAi* FindNearestEnemy(FVector searchLocation);
+	void DamageEnemiesInRadius(FVector searchLocation, float Radius, float damageAmount);
 };
+
