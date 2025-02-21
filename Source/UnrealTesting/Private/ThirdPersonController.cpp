@@ -193,8 +193,9 @@ void AThirdPersonController::FireEquippedSpell()
 	FActorSpawnParameters defaultProjectileSpawnParams;
 	for (int i = 0; i < currentSpellType->Multishot; ++i)
 	{
-		FVector positionOffet = FVector::UpVector.RotateAngleAxis((360.0f / currentSpellType->Multishot) * i, FVector(1,0,0));
-		AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation + positionOffet * 100, defaultProjectileRotation, defaultProjectileSpawnParams);
+		FVector positionOffet = GetFollowCamera()->GetUpVector().RotateAngleAxis((360.0f / currentSpellType->Multishot) * i, GetFollowCamera()->GetForwardVector());
+
+		AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation + (currentSpellType->Multishot > 0 ? (positionOffet * 50) : FVector(0,0,0)), defaultProjectileRotation, defaultProjectileSpawnParams);
 		test->ProjectileMovement->bInterpMovement = false;
 		test->ProjectileMovement->ResetInterpolation();
 		test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());

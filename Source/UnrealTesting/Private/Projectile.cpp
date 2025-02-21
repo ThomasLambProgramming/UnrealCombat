@@ -3,6 +3,7 @@
 
 #include "StandardAi.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "Math/UnitConversion.h"
 
 
 // Sets default values
@@ -72,13 +73,35 @@ void AProjectile::BeginPlay()
 	Super::BeginPlay();
 	if (Multishot <= 0)
 		Multishot = 1;
-	
+
+	closestDistanceForTrackingSquared = closestDistanceForTracking * closestDistanceForTracking;
 }
 
 // Called every frame
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	if (EntityTrackingState == TrackEnemy && AIManager != nullptr)
+	{
+		closestEnemyForTracking = AIManager->FindNearestEnemy(GetActorLocation());
+		if (closestEnemyForTracking == nullptr)
+			return;
+
+		const auto quaternion = FQuat::FindBetweenNormals((closestEnemyForTracking->GetActorLocation() - GetActorLocation()).GetSafeNormal(), ProjectileMovement->Velocity.GetSafeNormal());
+		float angleDeg = 0.0f;
+		FVector axisT;
+		quaternion.ToAxisAndAngle(axisT, angleDeg);
+		angleDeg = FMath::RadiansToDegrees(angleDeg);
+		angleDeg = -angleDeg;
+
+		if (firstLog)
+		{
+			firstLog = false;
+			GEngine->AddOnScreenDebugMessage(25, 5, FColor::Emerald, FString::FromInt(angleDeg) + TEXT(" Angle"));
+		}
+		
+		ProjectileMovement->Velocity = ProjectileMovement->Velocity.RotateAngleAxis(angleDeg * DeltaTime * 20 , axisT);
+	}
 }
 
 void AProjectile::SetupProjectile(AAIManager* aiManager)

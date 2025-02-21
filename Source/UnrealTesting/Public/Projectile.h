@@ -47,6 +47,11 @@ public:
 
 	void SetupProjectile(AAIManager* aiManager);
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	float closestDistanceForTracking = 500;
+	float closestDistanceForTrackingSquared;
+	AActor* closestEnemyForTracking;
+	
 	int bounceCount = 0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	int Multishot = 0;
@@ -67,4 +72,6 @@ public:
 	float AoeRange = 0;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	int BounceAmount = 0;
+
+	bool firstLog = true;
 };

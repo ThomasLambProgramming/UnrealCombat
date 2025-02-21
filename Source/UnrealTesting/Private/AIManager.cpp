@@ -85,7 +85,7 @@ void AAIManager::DeleteAi(int index)
 	GEngine->AddOnScreenDebugMessage(24368079, 5, FColor::Blue, TEXT("AICOUNTONDELETE") + FString::FromInt(previousCount) + " " + FString::FromInt(currentCount) );
 }
 
-AStandardAi* AAIManager::FindNearestEnemy(FVector searchLocation)
+AActor* AAIManager::FindNearestEnemy(FVector searchLocation)
 {
 	float closestDistance = FLT_MAX;
 	int closestIndex = FLT_MIN;
@@ -100,7 +100,7 @@ AStandardAi* AAIManager::FindNearestEnemy(FVector searchLocation)
 	}
 
 	if (closestIndex >= 0 && closestIndex <= AiActorsInMap.Num() -1)
-		return Cast<AStandardAi>(AiActorsInMap[closestIndex]);
+		return AiActorsInMap[closestIndex];
 
 	return nullptr;
 }
