@@ -83,7 +83,7 @@ void AProjectile::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (EntityTrackingState == TrackEnemy && AIManager != nullptr)
 	{
-		closestEnemyForTracking = AIManager->FindNearestEnemy(GetActorLocation());
+		closestEnemyForTracking = AIManager->FindNearestEnemy(GetActorLocation(), closestDistanceForTrackingSquared);
 		if (closestEnemyForTracking == nullptr)
 			return;
 
@@ -94,13 +94,7 @@ void AProjectile::Tick(float DeltaTime)
 		angleDeg = FMath::RadiansToDegrees(angleDeg);
 		angleDeg = -angleDeg;
 
-		if (firstLog)
-		{
-			firstLog = false;
-			GEngine->AddOnScreenDebugMessage(25, 5, FColor::Emerald, FString::FromInt(angleDeg) + TEXT(" Angle"));
-		}
-		
-		ProjectileMovement->Velocity = ProjectileMovement->Velocity.RotateAngleAxis(angleDeg * DeltaTime * 20 , axisT);
+		ProjectileMovement->Velocity = ProjectileMovement->Velocity.RotateAngleAxis(angleDeg * DeltaTime * trackingForce, axisT);
 	}
 }
 

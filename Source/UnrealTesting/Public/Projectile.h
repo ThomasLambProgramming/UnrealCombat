@@ -70,6 +70,10 @@ public:
 	float Damage = 1;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float AoeRange = 0;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	float trackingForce = 10;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	int BounceAmount = 0;
 
