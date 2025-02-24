@@ -17,7 +17,7 @@ public:
 	// Sets default values for this character's properties
 	AStandardAi();
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float MaxHealth= 100;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float CurrentHealth = 100;

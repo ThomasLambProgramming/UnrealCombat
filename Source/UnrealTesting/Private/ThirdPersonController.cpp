@@ -185,7 +185,7 @@ void AThirdPersonController::FireEquippedSpell()
 		hitLocation = raycastEndLocation;
 	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
 
-	FVector defaultProjectileLocation = GetActorLocation() + FVector(0,0,50) + GetFollowCamera()->GetForwardVector() * 80;
+	FVector defaultProjectileLocation = GetActorLocation() + GetFollowCamera()->GetForwardVector() * 80;
 	FVector directionToFire = hitLocation - defaultProjectileLocation;
 	directionToFire.Normalize();
 	
@@ -195,7 +195,7 @@ void AThirdPersonController::FireEquippedSpell()
 	{
 		FVector positionOffet = GetFollowCamera()->GetUpVector().RotateAngleAxis((360.0f / currentSpellType->Multishot) * i, GetFollowCamera()->GetForwardVector());
 
-		AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation + (currentSpellType->Multishot > 0 ? (positionOffet * 50) : FVector(0,0,0)), defaultProjectileRotation, defaultProjectileSpawnParams);
+		AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation + (currentSpellType->Multishot > 1 ? (positionOffet * 50) : FVector(0,0,0)), defaultProjectileRotation, defaultProjectileSpawnParams);
 		test->ProjectileMovement->bInterpMovement = false;
 		test->ProjectileMovement->ResetInterpolation();
 		test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());

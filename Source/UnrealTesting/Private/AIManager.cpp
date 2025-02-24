@@ -30,25 +30,25 @@ void AAIManager::BeginPlay()
 	}
 
 	//Spawn 4 base ai agents around the 0,0,0 location 
-	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
-	aiAdded->aiManager = this;
-	
-	spawnLocation.X = -500;
-	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
-	aiAdded->aiManager = this;
-	
-	spawnLocation.X = 0;
-	spawnLocation.Y = -500;
-	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
-	aiAdded->aiManager = this;
-	
-	spawnLocation.Y = 500;
-	AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
-	aiAdded->aiManager = this;
+	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	//AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
+	//aiAdded->aiManager = this;
+	//
+	//spawnLocation.X = -500;
+	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	//aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
+	//aiAdded->aiManager = this;
+	//
+	//spawnLocation.X = 0;
+	//spawnLocation.Y = -500;
+	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	//aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
+	//aiAdded->aiManager = this;
+	//
+	//spawnLocation.Y = 500;
+	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
+	//aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
+	//aiAdded->aiManager = this;
 }
 
 // Called every frame
