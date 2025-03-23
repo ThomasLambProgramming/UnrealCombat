@@ -3,7 +3,6 @@
 
 #include "StandardAi.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Math/UnitConversion.h"
 
 
 // Sets default values
@@ -12,12 +11,14 @@ AProjectile::AProjectile()
 	// Use a sphere as a simple collision representation
 	CollisionComp = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComp"));
 	CollisionComp->InitSphereRadius(5.0f);
-	CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
-	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);		// set up a notification for when this component hits something blocking
+	//CollisionComp->BodyInstance.SetCollisionProfileName("Projectile");
 
 	// Players can't walk on it
 	CollisionComp->SetWalkableSlopeOverride(FWalkableSlopeOverride(WalkableSlope_Unwalkable, 0.f));
 	CollisionComp->CanCharacterStepUpOn = ECB_No;
+	
+	CollisionComp->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);		// set up a notification for when this component hits something blocking
+	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnOverlapBegin);		// set up a notification for when this component hits something blocking
 
 	// Set as root component
 	RootComponent = CollisionComp;
@@ -29,20 +30,11 @@ AProjectile::AProjectile()
 	ProjectileMovement->MaxSpeed = 5000.f;
 	ProjectileMovement->bRotationFollowsVelocity = true;
 	ProjectileMovement->bShouldBounce = true;
-	ProjectileMovement->Activate();
 
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-//void AProjectile::ResetProjectile()
-//{
-//	ProjectileMovement->Velocity.X = 0;
-//	ProjectileMovement->Velocity.Y = 0;
-//	ProjectileMovement->Velocity.Z = 0;
-//	SetActorLocation(FVector(0,0,-400));
-//}
-
-void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AProjectile::OnOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
 {
 	//add damage. here other actor is the ai if it hits. do a cast check.
 	AStandardAi* enemyHit = Cast<AStandardAi>(OtherActor);
@@ -66,6 +58,21 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 	
 	Destroy();
 }
+void AProjectile::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+}
+
+void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse, const FHitResult& Hit)
+{
+	GEngine->AddOnScreenDebugMessage(101, 5, FColor::Blue, TEXT("Hit something"));
+	if (BounceAmount > 0 && bounceCount < BounceAmount)
+	{
+		bounceCount++;
+		return;
+	}
+	Destroy();
+}
 
 // Called when the game starts or when spawned
 void AProjectile::BeginPlay()
@@ -75,6 +82,9 @@ void AProjectile::BeginPlay()
 		Multishot = 1;
 
 	closestDistanceForTrackingSquared = closestDistanceForTracking * closestDistanceForTracking;
+	CollisionComp->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnOverlapBegin);		// set up a notification for when this component hits something blocking
+	CollisionComp->OnComponentEndOverlap.AddDynamic(this, &AProjectile::OnOverlapEnd);		// set up a notification for when this component hits something blocking
+	ProjectileMovement->Activate();
 }
 
 // Called every frame
@@ -87,14 +97,10 @@ void AProjectile::Tick(float DeltaTime)
 		if (closestEnemyForTracking == nullptr)
 			return;
 
-		const auto quaternion = FQuat::FindBetweenNormals((closestEnemyForTracking->GetActorLocation() - GetActorLocation()).GetSafeNormal(), ProjectileMovement->Velocity.GetSafeNormal());
-		float angleDeg = 0.0f;
-		FVector axisT;
-		quaternion.ToAxisAndAngle(axisT, angleDeg);
-		angleDeg = FMath::RadiansToDegrees(angleDeg);
-		angleDeg = -angleDeg;
-
-		ProjectileMovement->Velocity = ProjectileMovement->Velocity.RotateAngleAxis(angleDeg * DeltaTime * trackingForce, axisT);
+		float previousVelocityLength = ProjectileMovement->Velocity.Length();
+		FVector velocityDirection = ProjectileMovement->Velocity.GetSafeNormal();
+		FVector goalDirection = (closestEnemyForTracking->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		ProjectileMovement->Velocity = FMath::Lerp(velocityDirection, goalDirection, trackingForce) * previousVelocityLength;
 	}
 }
 
