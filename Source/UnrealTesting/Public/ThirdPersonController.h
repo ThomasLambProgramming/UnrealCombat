@@ -57,6 +57,9 @@ public:
 	void OnCannonAttackStarted();
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnCannonAttackEnded();
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnChangeScrollSelected(int scrollIndex);
 
 	bool InCannonAnimation = false;
 	FVector rotationOverrideWhileFiring;
@@ -87,6 +90,8 @@ protected:
 private:
 	AAIManager* AiManager;
 	//AProjectileManager* ProjectileManager;
+
+	const USkeletalMeshSocket* CannonBarrelEndSocket;
 	
 	UPROPERTY(EditDefaultsOnly, Category=Projectile)
 	TSubclassOf<AProjectile> slotOneProjectile;

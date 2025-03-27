@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Engine/SkeletalMeshSocket.h"
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -178,7 +179,8 @@ void AThirdPersonController::FireEquippedSpell()
 			GEngine->AddOnScreenDebugMessage(4, 5, FColor::Red, TEXT("Tried to fire an unknown projectile slot, fix!"));
 		}
 	}
-	
+
+	FVector cannonSocketLocation = GetMesh()->GetSocketLocation("CannonBarrelEnd");
 	FHitResult hitResult;
 	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 2000;
 	FCollisionQueryParams traceParams = FCollisionQueryParams(TEXT("CrosshairTrace"), true, this);
@@ -190,7 +192,7 @@ void AThirdPersonController::FireEquippedSpell()
 		hitLocation = raycastEndLocation;
 	DrawDebugSphere(GetWorld(), hitLocation, 20, 10, FColor::Red);
 
-	FVector defaultProjectileLocation = GetActorLocation() + GetFollowCamera()->GetForwardVector() * 80;
+	FVector defaultProjectileLocation = cannonSocketLocation;
 	FVector directionToFire = hitLocation - defaultProjectileLocation;
 	directionToFire.Normalize();
 	rotationOverrideWhileFiring = directionToFire;
@@ -361,22 +363,27 @@ void AThirdPersonController::InputAction1Pressed(const FInputActionValue& value)
 {
 	currentlySelectedSlot = 0;
 	currentSpellType = slotOneProjectile.GetDefaultObject();
+	OnChangeScrollSelected(0);
 }
 void AThirdPersonController::InputAction2Pressed(const FInputActionValue& value)
 {
 	currentlySelectedSlot = 1;
 	currentSpellType = slotTwoProjectile.GetDefaultObject();
+	OnChangeScrollSelected(1);
 }
 void AThirdPersonController::InputAction3Pressed(const FInputActionValue& value)
 {
 	currentlySelectedSlot = 2;
 	currentSpellType = slotThreeProjectile.GetDefaultObject();
+	OnChangeScrollSelected(2);
 }
 void AThirdPersonController::InputAction4Pressed(const FInputActionValue& value)
 {
+	OnChangeScrollSelected(3);
 }
 void AThirdPersonController::InputAction5Pressed(const FInputActionValue& value)
 {
+	OnChangeScrollSelected(4);
 }
 void AThirdPersonController::InputAction6Pressed(const FInputActionValue& value)
 {
