@@ -14,9 +14,9 @@ class AAIManager;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWandChangedSignature, int32, WandID);
 
 UCLASS(config=Game)
-
 class AThirdPersonController : public ACharacter
 {
 	GENERATED_BODY()
@@ -26,11 +26,9 @@ class AThirdPersonController : public ACharacter
 	USpringArmComponent* CameraBoom;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
-
 	
 	UPROPERTY(EditAnywhere, Category="Collision")
 	TEnumAsByte<ECollisionChannel> TraceChannelProperty = ECC_Pawn;
-
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float maximumDistanceForEnemyHit = 300;
@@ -49,6 +47,16 @@ class AThirdPersonController : public ACharacter
 	float MinimumAllowedDashDotProduct = 0.8f;
 
 public:
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnWandChanged(const int& WandID);
+	
+	UFUNCTION(BlueprintCallable)
+	void OnWandChangedUI(const int& WandID);
+
+	UPROPERTY(BlueprintAssignable)
+	FOnWandChangedSignature TestingDelegate;
+	
+	
 	AThirdPersonController();
 	void Tick(float DeltaSeconds) override;
 	

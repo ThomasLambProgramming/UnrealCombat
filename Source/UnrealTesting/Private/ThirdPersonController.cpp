@@ -12,6 +12,12 @@
 #include "Kismet/GameplayStatics.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
+
+void AThirdPersonController::OnWandChangedUI(const int& WandID)
+{
+	GEngine->AddOnScreenDebugMessage(46803579, 5, FColor::Blue, TEXT("ON WAND CHANGED UI!"));
+}
+
 AThirdPersonController::AThirdPersonController()
 {
 	// Set size for collision capsule
@@ -346,29 +352,34 @@ void AThirdPersonController::InputAction3Pressed(const FInputActionValue& value)
 }
 void AThirdPersonController::InputAction4Pressed(const FInputActionValue& value)
 {
-	
+	OnWandChanged(120);
 }
 void AThirdPersonController::InputAction5Pressed(const FInputActionValue& value)
 {
-	
+	TestingDelegate.Broadcast(1234567890);
 }
 void AThirdPersonController::InputAction6Pressed(const FInputActionValue& value)
 {
+	OnWandChanged(100);
 	
 }
 void AThirdPersonController::InputAction7Pressed(const FInputActionValue& value)
 {
+	OnWandChanged(90);
 	
 }
 void AThirdPersonController::InputAction8Pressed(const FInputActionValue& value)
 {
+	OnWandChanged(80);
 	
 }
 void AThirdPersonController::InputAction9Pressed(const FInputActionValue& value)
 {
+	OnWandChanged(70);
 	
 }
 void AThirdPersonController::InputAction0Pressed(const FInputActionValue& value)
 {
+	OnWandChanged(60);
 	
 }
