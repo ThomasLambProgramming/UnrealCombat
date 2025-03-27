@@ -13,11 +13,6 @@
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
-void AThirdPersonController::OnWandChangedUI(const int& WandID)
-{
-	GEngine->AddOnScreenDebugMessage(46803579, 5, FColor::Blue, TEXT("ON WAND CHANGED UI!"));
-}
-
 AThirdPersonController::AThirdPersonController()
 {
 	// Set size for collision capsule
@@ -74,6 +69,10 @@ void AThirdPersonController::Tick(float DeltaSeconds)
 	ProcessLerpDash();
 	if (!IsDashAttacking)
 		FindClosestEnemy();
+
+	if (InCannonAnimation)
+		SetActorRotation(rotationOverrideWhileFiring.ToOrientationRotator());
+	
 }
 
 bool AThirdPersonController::FindClosestEnemy()
@@ -194,6 +193,9 @@ void AThirdPersonController::FireEquippedSpell()
 	FVector defaultProjectileLocation = GetActorLocation() + GetFollowCamera()->GetForwardVector() * 80;
 	FVector directionToFire = hitLocation - defaultProjectileLocation;
 	directionToFire.Normalize();
+	rotationOverrideWhileFiring = directionToFire;
+	rotationOverrideWhileFiring.Z = 0;
+	rotationOverrideWhileFiring.Normalize();
 	
 	FRotator defaultProjectileRotation = directionToFire.ToOrientationRotator();
 	FActorSpawnParameters defaultProjectileSpawnParams;
@@ -259,6 +261,23 @@ void AThirdPersonController::Look(const FInputActionValue& Value)
 
 void AThirdPersonController::Attack(const FInputActionValue& Value)
 {
+	if (IsDashAttacking == false)
+	{
+		if (InCannonAnimation == false)
+		{
+			OnCannonAttackStarted();
+			InCannonAnimation = true;
+		}
+		UseAttackAnimation = true;
+	}
+	else
+	{
+		if (InCannonAnimation)
+			OnCannonAttackEnded();
+		InCannonAnimation = false;
+		UseAttackAnimation = false;
+	}
+	
 	if (IsDashAttacking || shootingTimer < (1.0f / currentSpellType->attacksPerSecond))
 		return;
 	shootingTimer = 0;
@@ -267,6 +286,9 @@ void AThirdPersonController::Attack(const FInputActionValue& Value)
 
 void AThirdPersonController::StopAttack(const FInputActionValue& Value)
 {
+	UseAttackAnimation = false;
+	InCannonAnimation = false;
+	OnCannonAttackEnded();
 }
 
 void AThirdPersonController::CounterAttack(const FInputActionValue& Value)
@@ -352,34 +374,22 @@ void AThirdPersonController::InputAction3Pressed(const FInputActionValue& value)
 }
 void AThirdPersonController::InputAction4Pressed(const FInputActionValue& value)
 {
-	OnWandChanged(120);
 }
 void AThirdPersonController::InputAction5Pressed(const FInputActionValue& value)
 {
-	TestingDelegate.Broadcast(1234567890);
 }
 void AThirdPersonController::InputAction6Pressed(const FInputActionValue& value)
 {
-	OnWandChanged(100);
-	
 }
 void AThirdPersonController::InputAction7Pressed(const FInputActionValue& value)
 {
-	OnWandChanged(90);
-	
 }
 void AThirdPersonController::InputAction8Pressed(const FInputActionValue& value)
 {
-	OnWandChanged(80);
-	
 }
 void AThirdPersonController::InputAction9Pressed(const FInputActionValue& value)
 {
-	OnWandChanged(70);
-	
 }
 void AThirdPersonController::InputAction0Pressed(const FInputActionValue& value)
 {
-	OnWandChanged(60);
-	
 }

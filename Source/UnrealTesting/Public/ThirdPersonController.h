@@ -46,16 +46,20 @@ class AThirdPersonController : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Attacking, meta = (AllowPrivateAccess = "true"))
 	float MinimumAllowedDashDotProduct = 0.8f;
 
-public:
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnWandChanged(const int& WandID);
-	
-	UFUNCTION(BlueprintCallable)
-	void OnWandChangedUI(const int& WandID);
+	UPROPERTY(EditDefaultsOnly, Category = Animations)
+	UAnimMontage* firingAnimation;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnWandChangedSignature TestingDelegate;
-	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations)
+	bool UseAttackAnimation = false;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCannonAttackStarted();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnCannonAttackEnded();
+
+	bool InCannonAnimation = false;
+	FVector rotationOverrideWhileFiring;
 	
 	AThirdPersonController();
 	void Tick(float DeltaSeconds) override;
