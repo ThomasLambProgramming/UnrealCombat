@@ -182,7 +182,7 @@ void AThirdPersonController::FireEquippedSpell()
 
 	FVector cannonSocketLocation = GetMesh()->GetSocketLocation("CannonBarrelEnd");
 	FHitResult hitResult;
-	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 2000;
+	FVector raycastEndLocation = GetFollowCamera()->GetComponentLocation() + GetFollowCamera()->GetForwardVector() * 9000;
 	FCollisionQueryParams traceParams = FCollisionQueryParams(TEXT("CrosshairTrace"), true, this);
 	GetWorld()->LineTraceSingleByChannel(hitResult, GetFollowCamera()->GetComponentLocation(), raycastEndLocation, TraceChannelProperty, traceParams);
 	FVector hitLocation;

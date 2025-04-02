@@ -97,10 +97,15 @@ void AProjectile::Tick(float DeltaTime)
 		if (closestEnemyForTracking == nullptr)
 			return;
 
-		float previousVelocityLength = ProjectileMovement->Velocity.Length();
-		FVector velocityDirection = ProjectileMovement->Velocity.GetSafeNormal();
-		FVector goalDirection = (closestEnemyForTracking->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		ProjectileMovement->Velocity = FMath::Lerp(velocityDirection, goalDirection, trackingForce) * previousVelocityLength;
+		FVector velocityToApply = closestEnemyForTracking->GetActorLocation() - GetActorLocation();
+		velocityToApply.Normalize();
+		velocityToApply *= trackingForce;
+		velocityToApply += ProjectileMovement->Velocity;
+		if (velocityToApply.SquaredLength() > MaximumProjectileSpeed)
+			velocityToApply = velocityToApply.GetSafeNormal() * MaximumProjectileSpeed;
+
+		
+		ProjectileMovement->Velocity = velocityToApply;
 	}
 }
 
