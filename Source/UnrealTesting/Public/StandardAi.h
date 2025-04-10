@@ -24,6 +24,12 @@ public:
 
 	AAIManager* aiManager;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= State)
+	bool IsDead = false;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnGetHit(AActor* attackingEnemy);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -39,6 +45,6 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void DamageAi(float damageAmount);
+	void DamageAi(float damageAmount, AActor* damagingActor);
 	void KillEnemyInstantly();
 };

@@ -206,12 +206,15 @@ void AThirdPersonController::FireEquippedSpell()
 		FVector positionOffet = GetFollowCamera()->GetUpVector().RotateAngleAxis((360.0f / currentSpellType->Multishot) * i, GetFollowCamera()->GetForwardVector());
 
 		AProjectile* test = GetWorld()->SpawnActor<AProjectile>(projectileToFire, defaultProjectileLocation + (currentSpellType->Multishot > 1 ? (positionOffet * 50) : FVector(0,0,0)), defaultProjectileRotation, defaultProjectileSpawnParams);
-		test->ProjectileMovement->bInterpMovement = false;
-		test->ProjectileMovement->ResetInterpolation();
-		test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());
-		test->ProjectileMovement->Velocity = directionToFire * currentSpellType->Speed;
-		//Give the new projectile the ai manager reference to track enemies.
-		test->SetupProjectile(AiManager);
+		if (test != nullptr && test->ProjectileMovement != nullptr)
+		{
+			test->ProjectileMovement->bInterpMovement = false;
+			test->ProjectileMovement->ResetInterpolation();
+			test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());
+			test->ProjectileMovement->Velocity = directionToFire * currentSpellType->Speed;
+			//Give the new projectile the ai manager reference to track enemies.
+			test->SetupProjectile(AiManager);
+		}
 	}
 }
 

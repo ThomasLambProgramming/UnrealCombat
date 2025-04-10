@@ -36,6 +36,6 @@ public:
 	void DeleteAi(int index);
 
 	AActor* FindNearestEnemy(FVector searchLocation, float distanceLimit);
-	void DamageEnemiesInRadius(FVector searchLocation, float Radius, float damageAmount);
+	void DamageEnemiesInRadius(FVector searchLocation, float Radius, float damageAmount, AActor* damagingActor);
 };
 

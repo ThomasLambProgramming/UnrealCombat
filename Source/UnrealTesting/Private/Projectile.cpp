@@ -51,10 +51,10 @@ void AProjectile::OnOverlapBegin(UPrimitiveComponent* overlappedComponent, AActo
 
 	if (AoeRange > 0)
 	{
-		AIManager->DamageEnemiesInRadius(GetActorLocation(), AoeRange, Damage);	
+		AIManager->DamageEnemiesInRadius(GetActorLocation(), AoeRange, Damage, this);	
 	}
 	else
-		enemyHit->DamageAi(Damage);
+		enemyHit->DamageAi(Damage, this);
 	
 	Destroy();
 }

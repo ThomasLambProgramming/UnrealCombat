@@ -105,14 +105,13 @@ AActor* AAIManager::FindNearestEnemy(FVector searchLocation, float distanceLimit
 	return nullptr;
 }
 
-void AAIManager::DamageEnemiesInRadius(FVector searchLocation, float Radius, float damageAmount)
+void AAIManager::DamageEnemiesInRadius(FVector searchLocation, float Radius, float damageAmount, AActor* damagingActor)
 {
 	for (int i = 0; i < AiActorsInMap.Num(); ++i)
 	{
 		float distance = FVector::DistSquared(AiActorsInMap[i]->GetActorLocation(), searchLocation);
 	    if (distance < (Radius * Radius))
-			Cast<AStandardAi>(AiActorsInMap[i])->DamageAi(damageAmount);
+			Cast<AStandardAi>(AiActorsInMap[i])->DamageAi(damageAmount, damagingActor);
 	}
-
 }
 
