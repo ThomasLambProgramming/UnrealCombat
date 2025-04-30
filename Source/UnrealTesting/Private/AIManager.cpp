@@ -1,6 +1,6 @@
 #include "AIManager.h"
 
-#include "StandardAi.h"
+#include "BaseAi.h"
 #include "Kismet/GameplayStatics.h"
 #include "Tests/AutomationCommon.h"
 
@@ -16,17 +16,15 @@ AAIManager::AAIManager()
 void AAIManager::BeginPlay()
 {
 	Super::BeginPlay();
-
 	FVector spawnLocation = FVector(500,0,96);
 	FRotator spawnRotation = FRotator(0,0,0);
 	FActorSpawnParameters defaultParams;
 
 	
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStandardAi::StaticClass(), AiActorsInMap);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseAi::StaticClass(), AiActorsInMap);
 	for (int i = 0; i < AiActorsInMap.Num(); ++i)
 	{
-	    AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[i]);
-	    aiAdded->aiManager = this;
+	    ABaseAi* aiAdded = Cast<ABaseAi, AActor>(AiActorsInMap[i]);
 	}
 
 	//Spawn 4 base ai agents around the 0,0,0 location 
@@ -57,7 +55,7 @@ void AAIManager::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AAIManager::DeleteAi(AStandardAi* index)
+void AAIManager::DeleteAi(ABaseAi* index)
 {
 	int previousCount= AiActorsInMap.Num();
 
@@ -111,7 +109,7 @@ void AAIManager::DamageEnemiesInRadius(FVector searchLocation, float Radius, flo
 	{
 		float distance = FVector::DistSquared(AiActorsInMap[i]->GetActorLocation(), searchLocation);
 	    if (distance < (Radius * Radius))
-			Cast<AStandardAi>(AiActorsInMap[i])->DamageAi(damageAmount, damagingActor);
+			Cast<ABaseAi>(AiActorsInMap[i])->DamageAi(damageAmount, damagingActor);
 	}
 }
 

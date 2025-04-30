@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "BaseAi.h"
 #include "AIManager.generated.h"
-
-class AStandardAi;
 
 UCLASS()
 class AAIManager : public AActor
@@ -16,10 +15,11 @@ class AAIManager : public AActor
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category= AI, meta = (AllowPrivateAccess = true))
 	TSubclassOf<ACharacter> DefaultAI;
 
-public:	
+public:
+	static AAIManager* AIManagerInstance;
+
 	// Sets default values for this actor's properties
 	AAIManager();
-
 	TArray<AActor*> AiActorsInMap;
 	
 
@@ -31,11 +31,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	//Searches array for the ai.
-	void DeleteAi(AStandardAi* index);
+	void DeleteAi(ABaseAi* index);
 	//Deleted ai from that index without searching.
 	void DeleteAi(int index);
 
 	AActor* FindNearestEnemy(FVector searchLocation, float distanceLimit);
 	void DamageEnemiesInRadius(FVector searchLocation, float Radius, float damageAmount, AActor* damagingActor);
 };
+
+AAIManager* AAIManager::AIManagerInstance = nullptr;
 

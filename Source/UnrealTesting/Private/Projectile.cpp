@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "Projectile.h"
 
-#include "StandardAi.h"
+#include "BaseAi.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 
 
@@ -37,7 +37,7 @@ AProjectile::AProjectile()
 void AProjectile::OnOverlapBegin(UPrimitiveComponent* overlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 otherBodyIndex, bool bFromSweep, const FHitResult& sweepResult)
 {
 	//add damage. here other actor is the ai if it hits. do a cast check.
-	AStandardAi* enemyHit = Cast<AStandardAi>(OtherActor);
+	ABaseAi* enemyHit = Cast<ABaseAi>(OtherActor);
 	if (enemyHit == nullptr)
 	{
 		if (BounceAmount > 0 && bounceCount < BounceAmount)

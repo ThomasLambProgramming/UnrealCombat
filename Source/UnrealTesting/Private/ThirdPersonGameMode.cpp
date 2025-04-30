@@ -1,5 +1,5 @@
 ﻿#include "ThirdPersonGameMode.h"
-#include "ThirdPersonController.h"
+#include "PlayerCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
 AThirdPersonGameMode::AThirdPersonGameMode()
