@@ -54,9 +54,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Animations)
 	bool UseAttackAnimation = false;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite)
 	FLivingEntityBase PlayerStats;
 
+	UFUNCTION(BlueprintPure)
+	float GetCurrentPlayerHealth() {return PlayerStats.CurrentHealth;}
+	UFUNCTION(BlueprintPure)
+	float GetMaxPlayerHealth() {return PlayerStats.CalculatedMaximumHealth;}
+	
 	UFUNCTION(Exec, Category="Commands")
 	void GiveConsoleItem(int ItemID);
 

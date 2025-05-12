@@ -20,7 +20,11 @@ public:
 
 	// Sets default values for this actor's properties
 	AAIManager();
+
+	UPROPERTY(VisibleAnywhere)
 	TArray<AActor*> AiActorsInMap;
+
+	AActor* PlayerCharacter;
 	
 
 protected:
@@ -31,8 +35,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	//Searches array for the ai.
-	void DeleteAi(ABaseAi* index);
+	void DeleteAi(ABaseAi* AiToFind);
+
+	
 	//Deleted ai from that index without searching.
+	UFUNCTION(Exec, Category="Commands")
 	void DeleteAi(int index);
 
 	AActor* FindNearestEnemy(FVector searchLocation, float distanceLimit);

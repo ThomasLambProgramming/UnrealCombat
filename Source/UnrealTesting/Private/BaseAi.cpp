@@ -1,4 +1,6 @@
 #include "BaseAi.h"
+
+#include "AIController.h"
 #include "Engine/LocalPlayer.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -7,9 +9,7 @@
 
 ABaseAi::ABaseAi()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	
 	// Don't rotate when the controller rotates. Let that just affect the camera.
@@ -18,57 +18,73 @@ ABaseAi::ABaseAi()
 	bUseControllerRotationRoll = false;
 
 	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
-
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
+	GetCharacterMovement()->bOrientRotationToMovement = true; 
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f);
+	
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
+
+	//Calculate all current stats.
+	AiStats.CalculateStatValues();
 }
 
-// Called when the game starts or when spawned
+float ABaseAi::GetMaximumHealth()
+{
+	return AiStats.CalculatedMaximumHealth;
+}
+
 void ABaseAi::BeginPlay()
 {
 	Super::BeginPlay();
+	//Calculate all current stats.
+	AiStats.CalculateStatValues();
 }
 
-//Have the enemies health bar appear if its the first time they are being shot
-void ABaseAi::RegisterDamageToUI()
-{
-}
-
-// Called every frame
 void ABaseAi::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-// Called to bind functionality to input
-void ABaseAi::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ABaseAi::TakeDamage(float damageAmount, AActor* damagingActor)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
-
-void ABaseAi::DamageAi(float damageAmount, AActor* damagingActor)
-{
-	CurrentHealth -= damageAmount;
-	OnAiHealthChangedDelegate.Broadcast();
-	if (CurrentHealth <= 0)
+	AiStats.CurrentHealth -= damageAmount;
+	if (AiStats.CurrentHealth <= 0)
+	{
 		AAIManager::AIManagerInstance->DeleteAi(this);
+		return;	
+	}
 
-	
-	OnGetHit(damagingActor);
+	AAIController* controller = Cast<AAIController>(GetController());
+	controller->MoveToLocation(damagingActor->GetActorLocation());
+	OnAiHit(damagingActor, damageAmount, AiStats.CurrentHealth);
 }
 
-//separate function to possibly cause a different explosion if the damage was double their health bar or something.
-void ABaseAi::KillEnemyInstantly()
+void ABaseAi::FindRandomWanderPoint()
 {
 }
 
+bool ABaseAi::CheckIfPlayerInVision()
+{
+	FHitResult lineTraceResult;
+	FCollisionObjectQueryParams collisionObjectParams;
+	FCollisionQueryParams collisionQueryParams;
+	collisionQueryParams.AddIgnoredActor(this);
+	
+	if (GetWorld()->LineTraceSingleByObjectType(lineTraceResult, GetActorLocation(), AAIManager::AIManagerInstance->PlayerCharacter->GetActorLocation(), collisionObjectParams ,collisionQueryParams))
+	{
+		if (lineTraceResult.GetActor() == AAIManager::AIManagerInstance->PlayerCharacter)
+		{
+			CurrentTarget = lineTraceResult.GetActor();
+			return true;
+		}
+	}
+	return false;
+}
+
+void ABaseAi::PersuePlayer()
+{
+}

@@ -69,6 +69,7 @@ void APlayerCharacter::BeginPlay()
 	//AActor* projectileManager = UGameplayStatics::GetActorOfClass(GetWorld(), AProjectileManager::StaticClass());
 	//ProjectileManager = Cast<AProjectileManager>(projectileManager);
 	AiManager = Cast<AAIManager>(aiManager);
+	AiManager->PlayerCharacter = this;
 }
 
 void APlayerCharacter::Tick(float DeltaSeconds)
@@ -221,7 +222,7 @@ void APlayerCharacter::FireEquippedSpell()
 			test->ProjectileMovement->SetUpdatedComponent(test->GetRootComponent());
 			test->ProjectileMovement->Velocity = directionToFire * currentSpellType->Speed;
 			//Give the new projectile the ai manager reference to track enemies.
-			test->SetupProjectile(AiManager);
+			test->SetupProjectile(AiManager, this);
 		}
 	}
 }

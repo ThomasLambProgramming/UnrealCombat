@@ -38,6 +38,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	AAIManager* AIManager;
+	AActor* OwningActor;
+	
 public:
 	
 	UFUNCTION()
@@ -50,7 +52,7 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void SetupProjectile(AAIManager* aiManager);
+	void SetupProjectile(AAIManager* aiManager, AActor* owningActor);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
 	float closestDistanceForTracking = 500;

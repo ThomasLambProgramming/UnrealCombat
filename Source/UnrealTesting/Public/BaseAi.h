@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "LivingEntityBase.h"
 #include "GameFramework/Character.h"
 #include "BaseAi.generated.h"
 
@@ -13,35 +14,31 @@ class ABaseAi : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	ABaseAi();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
-	float MaxHealth= 100;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Stats, meta = (AllowPrivateAccess = "true"))
-	float CurrentHealth = 100;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category= State)
-	bool IsDead = false;
-
+	//Blueprint call for when the ai is attacked, used for ui updating.
 	UFUNCTION(BlueprintImplementableEvent)
-	void OnGetHit(AActor* attackingEnemy);
+	void OnAiHit(AActor* AttackingEnemy, float DamageDone, float currentHealthLeft);
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	void RegisterDamageToUI();
+	UFUNCTION(BlueprintPure)
+	float GetMaximumHealth();
 
-public:
-	
-	UPROPERTY(BlueprintAssignable)
-	FOnAiHealthChangedSignature OnAiHealthChangedDelegate;
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	void TakeDamage(float damageAmount, AActor* damagingActor);
+	void FindRandomWanderPoint();
+	bool CheckIfPlayerInVision();
+	void PersuePlayer();
+	
+protected:
+	virtual void BeginPlay() override;
+	
+public:
+	UPROPERTY(BlueprintReadWrite)
+	FLivingEntityBase AiStats;
 
-	void DamageAi(float damageAmount, AActor* damagingActor);
-	void KillEnemyInstantly();
+	AActor* CurrentTarget = nullptr;
+	
+	UPROPERTY(EditAnywhere)
+	bool ShowDebugVisuals = false;
 };

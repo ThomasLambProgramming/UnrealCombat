@@ -54,7 +54,10 @@ void AProjectile::OnOverlapBegin(UPrimitiveComponent* overlappedComponent, AActo
 		AIManager->DamageEnemiesInRadius(GetActorLocation(), AoeRange, Damage, this);	
 	}
 	else
-		enemyHit->DamageAi(Damage, this);
+	{
+		//Get the actor that fired/setup this projectile.
+		enemyHit->TakeDamage(Damage, OwningActor);
+	}
 	
 	Destroy();
 }
@@ -104,13 +107,13 @@ void AProjectile::Tick(float DeltaTime)
 		if (velocityToApply.SquaredLength() > MaximumProjectileSpeed)
 			velocityToApply = velocityToApply.GetSafeNormal() * MaximumProjectileSpeed;
 
-		
 		ProjectileMovement->Velocity = velocityToApply;
 	}
 }
 
-void AProjectile::SetupProjectile(AAIManager* aiManager)
+void AProjectile::SetupProjectile(AAIManager* aiManager, AActor* owningActor)
 {
-	AIManager = aiManager;	
+	AIManager = aiManager;
+	OwningActor = owningActor;
 }
 

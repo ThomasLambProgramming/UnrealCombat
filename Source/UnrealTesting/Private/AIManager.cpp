@@ -10,58 +10,46 @@ AAIManager::AAIManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	AiActorsInMap = TArray<AActor*>();
+	AiActorsInMap.Init(nullptr, 10);
+	AIManagerInstance = this;
 }
 
 // Called when the game starts or when spawned
 void AAIManager::BeginPlay()
 {
 	Super::BeginPlay();
-	FVector spawnLocation = FVector(500,0,96);
-	FRotator spawnRotation = FRotator(0,0,0);
-	FActorSpawnParameters defaultParams;
-
+	if (AIManagerInstance == nullptr)
+		AIManagerInstance = this;
 	
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseAi::StaticClass(), AiActorsInMap);
-	for (int i = 0; i < AiActorsInMap.Num(); ++i)
-	{
-	    ABaseAi* aiAdded = Cast<ABaseAi, AActor>(AiActorsInMap[i]);
-	}
+	//FVector spawnLocation = FVector(500,0,96);
+	//FRotator spawnRotation = FRotator(0,0,0);
+	//FActorSpawnParameters defaultParams;
 
+	//for (int i = 0; i < AiActorsInMap.Num(); ++i)
+	//{
+	//    ABaseAi* aiAdded = Cast<ABaseAi, AActor>(AiActorsInMap[i]);
+	//}
+	
 	//Spawn 4 base ai agents around the 0,0,0 location 
 	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
 	//AStandardAi* aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
-	//aiAdded->aiManager = this;
-	//
-	//spawnLocation.X = -500;
-	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	//aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
-	//aiAdded->aiManager = this;
-	//
-	//spawnLocation.X = 0;
-	//spawnLocation.Y = -500;
-	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	//aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
-	//aiAdded->aiManager = this;
-	//
-	//spawnLocation.Y = 500;
-	//AiActorsInMap.Add(GetWorld()->SpawnActor<AActor>(DefaultAI, spawnLocation, spawnRotation, defaultParams));
-	//aiAdded = Cast<AStandardAi, AActor>(AiActorsInMap[AiActorsInMap.Num() - 1]);
 	//aiAdded->aiManager = this;
 }
 
 // Called every frame
 void AAIManager::Tick(float DeltaTime)
 {
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseAi::StaticClass(), AiActorsInMap);
 	Super::Tick(DeltaTime);
 }
 
-void AAIManager::DeleteAi(ABaseAi* index)
+void AAIManager::DeleteAi(ABaseAi* AiToFind)
 {
-	int previousCount= AiActorsInMap.Num();
-
+	int previousCount = AiActorsInMap.Num();
+	
 	for (int i = 0; i < AiActorsInMap.Num(); i++)
 	{
-		if (AiActorsInMap[i] == index)
+		if (AiActorsInMap[i] == AiToFind)
 		{
 			AiActorsInMap[i]->Destroy();
 			AiActorsInMap.RemoveAt(i, 1, EAllowShrinking::Yes);
@@ -109,7 +97,7 @@ void AAIManager::DamageEnemiesInRadius(FVector searchLocation, float Radius, flo
 	{
 		float distance = FVector::DistSquared(AiActorsInMap[i]->GetActorLocation(), searchLocation);
 	    if (distance < (Radius * Radius))
-			Cast<ABaseAi>(AiActorsInMap[i])->DamageAi(damageAmount, damagingActor);
+			Cast<ABaseAi>(AiActorsInMap[i])->TakeDamage(damageAmount, damagingActor);
 	}
 }
 
